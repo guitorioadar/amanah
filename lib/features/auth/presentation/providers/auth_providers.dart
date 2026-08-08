@@ -1,19 +1,18 @@
 import 'dart:async';
-
-import 'package:amanah/core/config/env.dart';
 import 'package:amanah/core/providers.dart';
 import 'package:amanah/features/auth/data/auth_repository.dart';
 import 'package:amanah/features/auth/presentation/providers/session_providers.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-
+/// Auth backend is fully live (login + password recovery), so the app always
+/// talks to the real repository. [MockAuthRepository] remains for tests.
 final Provider<AuthRepository> authRepositoryProvider =
     Provider<AuthRepository>((ref) {
-      final storage = ref.watch(secureStorageProvider);
-      final real = AuthRepositoryImpl(ref.watch(dioProvider), storage);
-      if (!Env.useMockApi) return real;
-      return HybridAuthRepository(real, MockAuthRepository(storage));
-    });
+  return AuthRepositoryImpl(
+    ref.watch(dioProvider),
+    ref.watch(secureStorageProvider),
+  );
+});
 
 /// Drives the sign-in action. `AsyncValue<void>` exposes loading/error/data
 /// for the UI (button spinner, error message).

@@ -8,6 +8,7 @@ import 'package:amanah/core/utils/validators.dart';
 import 'package:amanah/core/widgets/app_text_field.dart';
 import 'package:amanah/features/auth/presentation/providers/auth_providers.dart';
 import 'package:amanah/features/auth/presentation/widgets/auth_scaffold.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -22,7 +23,7 @@ class ForgotPasswordScreen extends ConsumerStatefulWidget {
 
 class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _email = TextEditingController();
+  final _email = TextEditingController( text: kDebugMode ? 'wasisadman.cse@gmail.com' : '');
   var _loading = false;
   String? _error;
   var _autovalidate = false;

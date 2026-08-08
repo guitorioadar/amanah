@@ -4,20 +4,21 @@ import 'package:amanah/features/auth/data/models/user.dart';
 import 'package:dio/dio.dart';
 
 /// Contract the UI depends on. Two implementations: real ([AuthRepositoryImpl])
-/// and mock ([MockAuthRepository]); the active one is chosen in the provider by
-/// `Env.useMockApi`. UI never sees which.
-/// Intentional interface — two implementations (real + mock) swap behind it.
+/// and mock ([MockAuthRepository]). UI never sees which.
+///
+/// Password recovery is two API calls: [requestPasswordReset] sends the OTP,
+/// then [resetPassword] verifies the OTP **and** sets the password in one call
+/// (there is no separate verify-OTP endpoint). A successful reset returns the
+/// signed-in [User] — the backend auto-logs-in.
 abstract interface class AuthRepository {
   Future<User> signIn({required String email, required String password});
 
   /// Sends an OTP to the account email (password-recovery step 1).
   Future<void> requestPasswordReset(String email);
 
-  /// Verifies the OTP for [email] (step 2). Throws if the code is wrong.
-  Future<void> verifyOtp({required String email, required String code});
-
-  /// Sets a new password after OTP verification (step 3).
-  Future<void> resetPassword({
+  /// Verifies the OTP and sets the new password (step 2). Returns the now
+  /// signed-in user; throws [ApiException] on a bad OTP or invalid password.
+  Future<User> resetPassword({
     required String email,
     required String code,
     required String newPassword,
@@ -41,13 +42,7 @@ class AuthRepositoryImpl implements AuthRepository {
         '/auth/login',
         data: {'email': email, 'password': password},
       );
-      // Envelope: { success, message, data: { user, access_token, token_type } }
-      final data = res.data!['data'] as Map<String, dynamic>;
-      await _storage.saveTokens(
-        accessToken: data['access_token'] as String,
-        refreshToken: data['refresh_token'] as String?,
-      );
-      return User.fromJson(data['user'] as Map<String, dynamic>);
+      return _persistSession(res.data!);
     } on DioException catch (e) {
       throw ApiException.fromDio(e);
     }
@@ -63,19 +58,7 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<void> verifyOtp({required String email, required String code}) async {
-    try {
-      await _dio.post<void>(
-        '/auth/verify-otp',
-        data: {'email': email, 'code': code},
-      );
-    } on DioException catch (e) {
-      throw ApiException.fromDio(e);
-    }
-  }
-
-  @override
-  Future<void> resetPassword({
+  Future<User> resetPassword({
     required String email,
     required String code,
     required String newPassword,
@@ -83,24 +66,34 @@ class AuthRepositoryImpl implements AuthRepository {
     try {
       final res = await _dio.post<Map<String, dynamic>>(
         '/auth/reset-password',
-        data: {'email': email, 'code': code, 'password': newPassword},
+        data: {
+          'email': email,
+          'otp_code': code,
+          'new_password': newPassword,
+          'new_password_confirmation': newPassword,
+        },
       );
-      final token = res.data?['access_token'] as String?;
-      if (token != null) {
-        await _storage.saveTokens(
-          accessToken: token,
-          refreshToken: res.data?['refresh_token'] as String?,
-        );
-      }
+      // Reset auto-logs-in: response carries the user + access token.
+      return _persistSession(res.data!);
     } on DioException catch (e) {
       throw ApiException.fromDio(e);
     }
   }
+
+  /// Extracts `{ data: { user, access_token } }`, saves the token, returns User.
+  Future<User> _persistSession(Map<String, dynamic> body) async {
+    final data = body['data'] as Map<String, dynamic>;
+    await _storage.saveTokens(
+      accessToken: data['access_token'] as String,
+      refreshToken: data['refresh_token'] as String?,
+    );
+    return User.fromJson(data['user'] as Map<String, dynamic>);
+  }
 }
 
-/// Mock implementation — dummy data, no backend. Drives M1–M2.
+/// Mock implementation — dummy data, no backend. Kept for tests / offline demo.
 ///
-/// Demo credentials: `auditor@isnahalal.com` / `password`.
+/// Demo credentials: `auditor@isnahalal.com` / `password`; demo OTP `000000`.
 class MockAuthRepository implements AuthRepository {
   MockAuthRepository(this._storage);
 
@@ -108,17 +101,18 @@ class MockAuthRepository implements AuthRepository {
 
   static const _demoEmail = 'auditor@isnahalal.com';
   static const _demoPassword = 'password';
-
-  /// Demo OTP accepted by [verifyOtp] / [resetPassword] in mock mode.
   static const _demoOtp = '000000';
 
   static Future<void> _latency() =>
       Future<void>.delayed(const Duration(milliseconds: 900));
 
   Future<void> _saveMockTokens() => _storage.saveTokens(
-    accessToken: 'mock-access-token',
-    refreshToken: 'mock-refresh-token',
-  );
+        accessToken: 'mock-access-token',
+        refreshToken: 'mock-refresh-token',
+      );
+
+  static const _demoUser =
+      User(id: 'u_1', name: 'Test Auditor', email: _demoEmail);
 
   @override
   Future<User> signIn({
@@ -133,25 +127,14 @@ class MockAuthRepository implements AuthRepository {
       );
     }
     await _saveMockTokens();
-    return const User(id: 'u_1', name: 'Test Auditor', email: _demoEmail);
+    return _demoUser;
   }
 
   @override
   Future<void> requestPasswordReset(String email) => _latency();
 
   @override
-  Future<void> verifyOtp({required String email, required String code}) async {
-    await _latency();
-    if (code != _demoOtp) {
-      throw const ApiException(
-        ApiErrorType.validation,
-        'Invalid or expired code.',
-      );
-    }
-  }
-
-  @override
-  Future<void> resetPassword({
+  Future<User> resetPassword({
     required String email,
     required String code,
     required String newPassword,
@@ -160,42 +143,11 @@ class MockAuthRepository implements AuthRepository {
     if (code != _demoOtp) {
       throw const ApiException(
         ApiErrorType.validation,
-        'Invalid or expired code.',
+        'Invalid OTP code.',
       );
     }
     // Auto sign-in after reset so we can land on the dashboard (per design).
     await _saveMockTokens();
+    return _demoUser;
   }
-}
-
-/// Transitional repository — real backend for the endpoints that exist,
-/// mock for the ones still being built. Sign-in hits the real API; password
-/// recovery stays mocked until those endpoints land. Move a method from
-/// [_mock] to [_real] as each endpoint ships; delete this class once all are
-/// real (then set `USE_MOCK_API=false`).
-class HybridAuthRepository implements AuthRepository {
-  HybridAuthRepository(this._real, this._mock);
-
-  final AuthRepositoryImpl _real;
-  final MockAuthRepository _mock;
-
-  @override
-  Future<User> signIn({required String email, required String password}) =>
-      _real.signIn(email: email, password: password);
-
-  @override
-  Future<void> requestPasswordReset(String email) =>
-      _mock.requestPasswordReset(email);
-
-  @override
-  Future<void> verifyOtp({required String email, required String code}) =>
-      _mock.verifyOtp(email: email, code: code);
-
-  @override
-  Future<void> resetPassword({
-    required String email,
-    required String code,
-    required String newPassword,
-  }) =>
-      _mock.resetPassword(email: email, code: code, newPassword: newPassword);
 }

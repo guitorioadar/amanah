@@ -49,7 +49,7 @@ class ApiException implements Exception {
         }
         return ApiException(
           ApiErrorType.server,
-          'Something went wrong on our end. Please try again.',
+          serverMessage ?? 'Something went wrong on our end. Please try again.',
           statusCode: code,
         );
       case DioExceptionType.cancel:

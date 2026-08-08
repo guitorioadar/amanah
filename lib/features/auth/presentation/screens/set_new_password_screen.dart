@@ -5,6 +5,7 @@ import 'package:amanah/core/theme/app_text_styles.dart';
 import 'package:amanah/core/utils/validators.dart';
 import 'package:amanah/core/widgets/app_text_field.dart';
 import 'package:amanah/features/auth/presentation/providers/auth_providers.dart';
+import 'package:amanah/features/auth/presentation/providers/session_providers.dart';
 import 'package:amanah/features/auth/presentation/widgets/auth_scaffold.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -51,11 +52,13 @@ class _SetNewPasswordScreenState extends ConsumerState<SetNewPasswordScreen> {
       _error = null;
     });
     try {
-      await ref.read(authRepositoryProvider).resetPassword(
+      final user = await ref.read(authRepositoryProvider).resetPassword(
             email: widget.email,
             code: widget.code,
             newPassword: _password.text,
           );
+      // Reset auto-logs-in — cache the user so we land signed in.
+      await ref.read(currentUserProvider.notifier).setUser(user);
       if (mounted) context.go('/password-updated');
     } on ApiException catch (e) {
       setState(() => _error = e.message);

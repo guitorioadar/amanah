@@ -74,7 +74,7 @@ class AuthPrimaryButton extends StatelessWidget {
     return SizedBox(
       height: 52,
       child: ElevatedButton(
-        onPressed: loading ? null : onPressed,
+        onPressed: loading ? () {} : onPressed,
         child: loading
             ? const SizedBox(
                 width: 22,

@@ -68,13 +68,29 @@ void main() {
       await expectLater(repo.requestPasswordReset('x@y.com'), completes);
     });
 
-    test('verifyOtp accepts the demo code, rejects others', () async {
-      await expectLater(
-        repo.verifyOtp(email: 'x@y.com', code: '000000'),
-        completes,
+    test('resetPassword with demo code returns the user and persists tokens',
+        () async {
+      final user = await repo.resetPassword(
+        email: 'x@y.com',
+        code: '000000',
+        newPassword: 'newpassword',
       );
+      expect(user.email, 'auditor@isnahalal.com');
+      verify(
+        () => storage.saveTokens(
+          accessToken: any(named: 'accessToken'),
+          refreshToken: any(named: 'refreshToken'),
+        ),
+      ).called(1);
+    });
+
+    test('resetPassword rejects a wrong code and saves nothing', () async {
       await expectLater(
-        () => repo.verifyOtp(email: 'x@y.com', code: '111111'),
+        () => repo.resetPassword(
+          email: 'x@y.com',
+          code: '111111',
+          newPassword: 'newpassword',
+        ),
         throwsA(
           isA<ApiException>().having(
             (e) => e.type,
@@ -83,20 +99,12 @@ void main() {
           ),
         ),
       );
-    });
-
-    test('resetPassword with demo code persists tokens', () async {
-      await repo.resetPassword(
-        email: 'x@y.com',
-        code: '000000',
-        newPassword: 'newpassword',
-      );
-      verify(
+      verifyNever(
         () => storage.saveTokens(
           accessToken: any(named: 'accessToken'),
           refreshToken: any(named: 'refreshToken'),
         ),
-      ).called(1);
+      );
     });
   });
 }

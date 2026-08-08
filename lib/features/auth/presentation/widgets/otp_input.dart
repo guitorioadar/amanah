@@ -107,8 +107,8 @@ class _OtpInputState extends State<OtpInput> {
           textAlign: TextAlign.center,
           keyboardType: TextInputType.number,
           style: AppText.headingM,
-          maxLength: 1,
-          buildCounter: (_, {required currentLength, required isFocused, maxLength}) => null,
+          // No maxLength — it would truncate a pasted code to one digit before
+          // [_onChanged] can distribute it across the boxes.
           inputFormatters: [FilteringTextInputFormatter.digitsOnly],
           onChanged: (v) => _onChanged(i, v),
           decoration: InputDecoration(

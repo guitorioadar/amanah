@@ -28,36 +28,27 @@ class _OtpVerificationScreenState
   var _loading = false;
   String? _error;
 
-  Future<void> _submit() async {
+  void _submit() {
     FocusScope.of(context).unfocus();
     if (_code.length < _codeLength) {
       setState(() => _error = 'Enter the 6-digit code.');
       return;
     }
+    // No verify endpoint — the OTP is checked by the reset-password call on the
+    // next screen. Carry the code forward.
+    unawaited(
+      context.push(
+        '/reset-password',
+        extra: {'email': widget.email, 'code': _code},
+      ),
+    );
+  }
+
+  Future<void> _resend() async {
     setState(() {
       _loading = true;
       _error = null;
     });
-    try {
-      await ref
-          .read(authRepositoryProvider)
-          .verifyOtp(email: widget.email, code: _code);
-      if (mounted) {
-        unawaited(
-          context.push(
-            '/reset-password',
-            extra: {'email': widget.email, 'code': _code},
-          ),
-        );
-      }
-    } on ApiException catch (e) {
-      setState(() => _error = e.message);
-    } finally {
-      if (mounted) setState(() => _loading = false);
-    }
-  }
-
-  Future<void> _resend() async {
     try {
       await ref.read(authRepositoryProvider).requestPasswordReset(widget.email);
       if (mounted) {
@@ -67,6 +58,8 @@ class _OtpVerificationScreenState
       }
     } on ApiException catch (e) {
       if (mounted) setState(() => _error = e.message);
+    } finally {
+      if (mounted) setState(() => _loading = false);
     }
   }
 
@@ -100,7 +93,6 @@ class _OtpVerificationScreenState
             _code = v;
             _error = null;
           }),
-          onCompleted: (_) => _submit(),
         ),
         const SizedBox(height: AppSpacing.s4),
         Row(
