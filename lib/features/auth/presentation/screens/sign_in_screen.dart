@@ -5,6 +5,7 @@ import 'package:amanah/core/theme/app_text_styles.dart';
 import 'package:amanah/core/utils/validators.dart';
 import 'package:amanah/core/widgets/app_text_field.dart';
 import 'package:amanah/features/auth/presentation/providers/auth_providers.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -19,8 +20,10 @@ class SignInScreen extends ConsumerStatefulWidget {
 
 class _SignInScreenState extends ConsumerState<SignInScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _email = TextEditingController();
-  final _password = TextEditingController();
+  
+  final _email = TextEditingController( text: kDebugMode ? 'sadman@example.com' : '', );
+  final _password = TextEditingController( text: kDebugMode ? '1234567890' : '', );
+  
   var _autovalidate = false;
 
   @override
