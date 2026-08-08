@@ -5,21 +5,22 @@ import 'package:amanah/core/providers.dart';
 import 'package:amanah/features/auth/data/auth_repository.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-/// Selects the real or mock repository behind the [AuthRepository] interface.
+
 final Provider<AuthRepository> authRepositoryProvider =
     Provider<AuthRepository>((ref) {
-  final storage = ref.watch(secureStorageProvider);
-  if (Env.useMockApi) return MockAuthRepository(storage);
-  return AuthRepositoryImpl(ref.watch(dioProvider), storage);
-});
+      final storage = ref.watch(secureStorageProvider);
+      final real = AuthRepositoryImpl(ref.watch(dioProvider), storage);
+      if (!Env.useMockApi) return real;
+      return HybridAuthRepository(real, MockAuthRepository(storage));
+    });
 
 /// Drives the sign-in action. `AsyncValue<void>` exposes loading/error/data
 /// for the UI (button spinner, error message).
 // ignore: specify_nonobvious_property_types
 final signInControllerProvider =
     AsyncNotifierProvider.autoDispose<SignInController, void>(
-  SignInController.new,
-);
+      SignInController.new,
+    );
 
 class SignInController extends AsyncNotifier<void> {
   @override

@@ -32,17 +32,18 @@ class ApiException implements Exception {
         );
       case DioExceptionType.badResponse:
         final code = e.response?.statusCode;
+        final serverMessage = _messageOf(e.response?.data);
         if (code == 401 || code == 403) {
           return ApiException(
             ApiErrorType.unauthorized,
-            'Your session has expired. Please sign in again.',
+            serverMessage ?? 'Your session has expired. Please sign in again.',
             statusCode: code,
           );
         }
         if (code == 422 || code == 400) {
           return ApiException(
             ApiErrorType.validation,
-            'Please check the highlighted fields.',
+            serverMessage ?? 'Please check the highlighted fields.',
             statusCode: code,
           );
         }
@@ -59,6 +60,15 @@ class ApiException implements Exception {
           'Something went wrong. Please try again.',
         );
     }
+  }
+
+  /// Pulls a human `message` out of the backend's JSON envelope, if present.
+  static String? _messageOf(Object? data) {
+    if (data is Map && data['message'] is String) {
+      final msg = (data['message'] as String).trim();
+      if (msg.isNotEmpty) return msg;
+    }
+    return null;
   }
 
   final ApiErrorType type;

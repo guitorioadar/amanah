@@ -41,7 +41,8 @@ class AuthRepositoryImpl implements AuthRepository {
         '/auth/login',
         data: {'email': email, 'password': password},
       );
-      final data = res.data!;
+      // Envelope: { success, message, data: { user, access_token, token_type } }
+      final data = res.data!['data'] as Map<String, dynamic>;
       await _storage.saveTokens(
         accessToken: data['access_token'] as String,
         refreshToken: data['refresh_token'] as String?,
@@ -165,4 +166,36 @@ class MockAuthRepository implements AuthRepository {
     // Auto sign-in after reset so we can land on the dashboard (per design).
     await _saveMockTokens();
   }
+}
+
+/// Transitional repository — real backend for the endpoints that exist,
+/// mock for the ones still being built. Sign-in hits the real API; password
+/// recovery stays mocked until those endpoints land. Move a method from
+/// [_mock] to [_real] as each endpoint ships; delete this class once all are
+/// real (then set `USE_MOCK_API=false`).
+class HybridAuthRepository implements AuthRepository {
+  HybridAuthRepository(this._real, this._mock);
+
+  final AuthRepositoryImpl _real;
+  final MockAuthRepository _mock;
+
+  @override
+  Future<User> signIn({required String email, required String password}) =>
+      _real.signIn(email: email, password: password);
+
+  @override
+  Future<void> requestPasswordReset(String email) =>
+      _mock.requestPasswordReset(email);
+
+  @override
+  Future<void> verifyOtp({required String email, required String code}) =>
+      _mock.verifyOtp(email: email, code: code);
+
+  @override
+  Future<void> resetPassword({
+    required String email,
+    required String code,
+    required String newPassword,
+  }) =>
+      _mock.resetPassword(email: email, code: code, newPassword: newPassword);
 }
