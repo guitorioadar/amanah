@@ -107,7 +107,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                 SizedBox(
                   height: 52,
                   child: ElevatedButton(
-                    onPressed: loading ? null : _submit,
+                    onPressed: loading ? () {} : _submit,
                     child: loading
                         ? const SizedBox(
                             width: 22,
