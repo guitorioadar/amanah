@@ -23,15 +23,7 @@ class ShellScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: navigationShell,
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {}, // wired in M-expenses
-        backgroundColor: AppColors.bgBrandBold,
-        foregroundColor: AppColors.brandOnPrimary,
-        icon: const Icon(Icons.add),
-        label: Text('Expense', style: AppText.buttonM.copyWith(
-          color: AppColors.brandOnPrimary,
-        ),),
-      ),
+      floatingActionButton: const _ExpenseButton(),
       bottomNavigationBar: NavigationBar(
         selectedIndex: navigationShell.currentIndex,
         onDestinationSelected: (i) => navigationShell.goBranch(
@@ -57,6 +49,42 @@ class _TabSpec {
   const _TabSpec(this.label, this.icon);
   final String label;
   final String icon;
+}
+
+/// Global "+ Expense" action. Fixed 98×36 pill per design (smaller than a
+/// standard extended FAB, so it's built from [Material] directly).
+class _ExpenseButton extends StatelessWidget {
+  const _ExpenseButton();
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: AppColors.bgBrandBold,
+      elevation: 3,
+      shape: const StadiumBorder(),
+      child: InkWell(
+        customBorder: const StadiumBorder(),
+        onTap: () {}, // wired in M-expenses
+        child: SizedBox(
+          width: 98,
+          height: 36,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.add, size: 18, color: AppColors.brandOnPrimary),
+              const SizedBox(width: 4),
+              Text(
+                'Expense',
+                style: AppText.buttonS.copyWith(
+                  color: AppColors.brandOnPrimary,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 class _NavIcon extends StatelessWidget {

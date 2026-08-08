@@ -69,4 +69,7 @@ abstract final class AppPalette {
   static const purple7 = Color(0xFFD1AFEC);
   static const purple9 = Color(0xFF8E4EC6);
   static const purple10 = Color(0xFF8347B9);
+
+  // ── Magenta (profile "Terms & conditions" accent) ──
+  static const magenta10 = Color(0xFFD6409F);
 }

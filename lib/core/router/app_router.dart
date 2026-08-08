@@ -3,6 +3,8 @@ import 'package:amanah/features/auth/presentation/screens/otp_verification_scree
 import 'package:amanah/features/auth/presentation/screens/password_updated_screen.dart';
 import 'package:amanah/features/auth/presentation/screens/set_new_password_screen.dart';
 import 'package:amanah/features/auth/presentation/screens/sign_in_screen.dart';
+import 'package:amanah/features/auth/presentation/screens/signing_out_screen.dart';
+import 'package:amanah/features/profile/presentation/screens/profile_screen.dart';
 import 'package:amanah/features/shell/presentation/shell_screen.dart';
 import 'package:amanah/features/splash/presentation/splash_screen.dart';
 import 'package:flutter/widgets.dart';
@@ -22,12 +24,19 @@ GoRouter buildRouter() {
       GoRoute(
         path: '/splash',
         builder: (context, state) => SplashScreen(
-          onDone: () => context.go('/sign-in'),
+          onSignedIn: () => context.go('/home'),
+          onSignedOut: () => context.go('/sign-in'),
         ),
       ),
       GoRoute(
         path: '/sign-in',
         builder: (context, state) => const SignInScreen(),
+      ),
+      GoRoute(
+        path: '/signing-out',
+        builder: (context, state) => SigningOutScreen(
+          onDone: () => context.go('/sign-in'),
+        ),
       ),
       GoRoute(
         path: '/forgot-password',
@@ -60,7 +69,14 @@ GoRouter buildRouter() {
           _branch('/home', 'Home'),
           _branch('/audits', 'Audits'),
           _branch('/expenses', 'Expenses'),
-          _branch('/profile', 'Profile'),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/profile',
+                builder: (context, state) => const ProfileScreen(),
+              ),
+            ],
+          ),
         ],
       ),
     ],

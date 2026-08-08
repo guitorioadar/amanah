@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:amanah/core/config/env.dart';
 import 'package:amanah/core/providers.dart';
 import 'package:amanah/features/auth/data/auth_repository.dart';
+import 'package:amanah/features/auth/presentation/providers/session_providers.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 
@@ -33,9 +34,10 @@ class SignInController extends AsyncNotifier<void> {
   }) async {
     state = const AsyncLoading<void>();
     final result = await AsyncValue.guard<void>(() async {
-      await ref
+      final user = await ref
           .read(authRepositoryProvider)
           .signIn(email: email, password: password);
+      await ref.read(currentUserProvider.notifier).setUser(user);
     });
     state = result;
     return !result.hasError;
