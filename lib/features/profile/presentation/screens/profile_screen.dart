@@ -1,3 +1,4 @@
+import 'package:amanah/core/config/env.dart';
 import 'package:amanah/core/theme/app_colors.dart';
 import 'package:amanah/core/theme/app_spacing.dart';
 import 'package:amanah/core/theme/app_text_styles.dart';
@@ -7,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 /// Profile tab — navy header with avatar + identity, grouped settings cards,
 /// and a Sign out action. Reads the signed-in user from [currentUserProvider].
@@ -71,6 +73,8 @@ class ProfileScreen extends ConsumerWidget {
                   ),
                   const SizedBox(height: AppSpacing.s5),
                   _SignOutButton(onPressed: () => context.push('/signing-out')),
+                  const SizedBox(height: AppSpacing.s5),
+                  const _BuildInfo(),
                   // Clears the floating Expense button + bottom nav bar.
                   SizedBox(height: AppSpacing.s9 + MediaQuery.of(context).viewPadding.bottom + 56),
                 ],
@@ -249,6 +253,39 @@ class _Row extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+/// TEMPORARY diagnostic — shows app version/build + which env file loaded.
+/// Remove before release.
+class _BuildInfo extends StatelessWidget {
+  const _BuildInfo();
+
+  @override
+  Widget build(BuildContext context) {
+    final style = AppText.bodyXsRegular.copyWith(color: AppColors.textSubtlest);
+    return FutureBuilder<PackageInfo>(
+      future: PackageInfo.fromPlatform(),
+      builder: (context, snap) {
+        final info = snap.data;
+        final version = info == null
+            ? '…'
+            : 'v${info.version} (${info.buildNumber})';
+        return Column(
+          children: [
+            Text(version, style: style,),
+            const SizedBox(height: AppSpacing.s1),
+            // Text('env: ${Env.envName}', style: style),
+            // const SizedBox(height: AppSpacing.s1),
+            // Text(
+            //   Env.apiBaseUrl,
+            //   textAlign: TextAlign.center,
+            //   style: style,
+            // ),
+          ],
+        );
+      },
     );
   }
 }

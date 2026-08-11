@@ -15,6 +15,10 @@ abstract final class Env {
 
   static Future<void> load() => dotenv.load(fileName: 'env/.env.$flavor');
 
+  /// Human label of the loaded env file (`dev`/`prod`). Falls back to [flavor].
+  /// TEMPORARY: surfaced in the Profile screen for build verification.
+  static String get envName => dotenv.maybeGet('ENV_NAME') ?? flavor;
+
   /// When true, repositories resolve to their mock implementations
   /// (dummy data, no backend). Drives the M1–M2 mock-first strategy.
   static bool get useMockApi =>
