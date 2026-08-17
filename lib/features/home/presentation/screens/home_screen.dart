@@ -72,19 +72,25 @@ class _Header extends StatelessWidget {
       width: double.infinity,
       color: AppColors.bgSolid,
       padding: EdgeInsets.fromLTRB(
-        AppSpacing.s4,
+        AppSpacing.s1,
         topInset,
-        AppSpacing.s4,
+        AppSpacing.s1,
         AppSpacing.s4,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _IdentityRow(name: name, avatarUrl: avatarUrl),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s3),
+            child: _IdentityRow(name: name, avatarUrl: avatarUrl),
+          ),
           const SizedBox(height: AppSpacing.s6),
-          Text(
-            'Welcome back!',
-            style: AppText.bodyLMedium.copyWith(color: AppColors.textSubtlest),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s3),
+            child: Text(
+              'Welcome back!',
+              style: AppText.bodyLMedium.copyWith(color: AppColors.textSubtlest),
+            ),
           ),
           const SizedBox(height: AppSpacing.s1),
           const _RunningSection(),
@@ -107,9 +113,12 @@ class _RunningSection extends ConsumerWidget {
     Widget frame(String title, Widget child) => Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              title,
-              style: AppText.headingL.copyWith(color: AppColors.textInverse),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s3),
+              child: Text(
+                title,
+                style: AppText.headingL.copyWith(color: AppColors.textInverse),
+              ),
             ),
             const SizedBox(height: AppSpacing.s6),
             child,
@@ -194,9 +203,13 @@ class _RunningCarouselState extends State<_RunningCarousel> {
             onPageChanged: (i) => setState(() => _page = i),
             itemBuilder: (context, i) => Align(
               alignment: Alignment.topCenter,
-              child: AuditCard(
-                audit: audits[i],
-                onTap: () {}, // TODO(M4): open audit details
+              child: Padding(
+                // Inset each page so adjacent cards have a gap when swiping.
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s2),
+                child: AuditCard(
+                  audit: audits[i],
+                  onTap: () {}, // TODO(M4): open audit details
+                ),
               ),
             ),
           ),
