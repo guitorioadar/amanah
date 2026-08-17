@@ -1,4 +1,5 @@
 import 'package:amanah/core/theme/app_colors.dart';
+import 'package:amanah/core/theme/app_palette.dart';
 import 'package:amanah/core/theme/app_text_styles.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -24,22 +25,43 @@ class ShellScreen extends StatelessWidget {
     return Scaffold(
       body: navigationShell,
       floatingActionButton: const _ExpenseButton(),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: navigationShell.currentIndex,
-        onDestinationSelected: (i) => navigationShell.goBranch(
-          i,
-          initialLocation: i == navigationShell.currentIndex,
-        ),
-        backgroundColor: AppColors.bgDefault,
-        indicatorColor: AppColors.bgInfo,
-        destinations: [
-          for (final tab in _tabs)
-            NavigationDestination(
-              icon: _NavIcon(tab.icon, image: tab.image, selected: false),
-              selectedIcon: _NavIcon(tab.icon, image: tab.image, selected: true),
-              label: tab.label,
+      bottomNavigationBar: DecoratedBox(
+        decoration: BoxDecoration(
+          color: AppColors.bgDefault,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+          border: Border(top: BorderSide(color: AppColors.borderDefault)),
+          boxShadow: [
+            BoxShadow(
+              color: AppPalette.neutral12.withValues(alpha: 0.08),
+              blurRadius: 16,
+              offset: const Offset(0, -4),
             ),
-        ],
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+          child: NavigationBar(
+            selectedIndex: navigationShell.currentIndex,
+            onDestinationSelected: (i) => navigationShell.goBranch(
+              i,
+              initialLocation: i == navigationShell.currentIndex,
+            ),
+            backgroundColor: AppColors.bgDefault,
+            surfaceTintColor: Colors.transparent,
+            shadowColor: Colors.transparent,
+            elevation: 0,
+            indicatorColor: AppColors.bgInfo,
+            destinations: [
+              for (final tab in _tabs)
+                NavigationDestination(
+                  icon: _NavIcon(tab.icon, image: tab.image, selected: false),
+                  selectedIcon:
+                      _NavIcon(tab.icon, image: tab.image, selected: true),
+                  label: tab.label,
+                ),
+            ],
+          ),
+        ),
       ),
     );
   }
