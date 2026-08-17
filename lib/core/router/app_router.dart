@@ -4,6 +4,7 @@ import 'package:amanah/features/auth/presentation/screens/password_updated_scree
 import 'package:amanah/features/auth/presentation/screens/set_new_password_screen.dart';
 import 'package:amanah/features/auth/presentation/screens/sign_in_screen.dart';
 import 'package:amanah/features/auth/presentation/screens/signing_out_screen.dart';
+import 'package:amanah/features/home/presentation/screens/home_screen.dart';
 import 'package:amanah/features/profile/presentation/screens/profile_screen.dart';
 import 'package:amanah/features/shell/presentation/shell_screen.dart';
 import 'package:amanah/features/splash/presentation/splash_screen.dart';
@@ -66,7 +67,14 @@ GoRouter buildRouter() {
         builder: (context, state, navigationShell) =>
             ShellScreen(navigationShell: navigationShell),
         branches: [
-          _branch('/home', 'Home'),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/home',
+                builder: (context, state) => const HomeScreen(),
+              ),
+            ],
+          ),
           _branch('/audits', 'Audits'),
           _branch('/expenses', 'Expenses'),
           StatefulShellBranch(

@@ -1,10 +1,9 @@
-import 'package:amanah/core/config/env.dart';
 import 'package:amanah/core/theme/app_colors.dart';
 import 'package:amanah/core/theme/app_spacing.dart';
 import 'package:amanah/core/theme/app_text_styles.dart';
+import 'package:amanah/core/widgets/app_avatar.dart';
 import 'package:amanah/features/auth/data/models/user.dart';
 import 'package:amanah/features/auth/presentation/providers/session_providers.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -106,7 +105,12 @@ class _Header extends StatelessWidget {
       ),
       child: Column(
         children: [
-          _Avatar(url: user?.profilePictureUrl),
+          AppAvatar(
+            url: user?.profilePictureUrl,
+            size: 64,
+            borderColor: AppColors.textInverse,
+            borderWidth: 3,
+          ),
           const SizedBox(height: AppSpacing.s4),
           Text(
             user?.name ?? 'Auditor',
@@ -123,49 +127,6 @@ class _Header extends StatelessWidget {
       ),
     );
   }
-}
-
-class _Avatar extends StatelessWidget {
-  const _Avatar({this.url});
-  final String? url;
-
-  static const _size = 64.0;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: _size,
-      height: _size,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        border: Border.all(color: AppColors.textInverse, width: 3),
-      ),
-      child: ClipOval(
-        child: (url != null && url!.isNotEmpty)
-            ? CachedNetworkImage(
-                imageUrl: url!,
-                fit: BoxFit.cover,
-                placeholder: (_, _) => _placeholder(),
-                errorWidget: (_, _, _) => _placeholder(),
-              )
-            : _placeholder(),
-      ),
-    );
-  }
-
-  Widget _placeholder() => ColoredBox(
-        color: AppColors.bgHovered,
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.s2),
-          child: SvgPicture.asset(
-            'assets/icons/fill/User.svg',
-            colorFilter: const ColorFilter.mode(
-              AppColors.iconSubtle,
-              BlendMode.srcIn,
-            ),
-          ),
-        ),
-      );
 }
 
 class _SectionLabel extends StatelessWidget {

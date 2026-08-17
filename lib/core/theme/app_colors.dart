@@ -35,6 +35,7 @@ abstract final class AppColors {
   static const Color iconWarning = AppPalette.orange10;
   static const Color iconInformation = AppPalette.cyan10;
   static const Color iconMagenta = AppPalette.magenta10;
+  static const Color iconNotification = AppPalette.red5;
 
   // ── Surfaces ──
   static const Color bgDefault = AppPalette.neutral1;
