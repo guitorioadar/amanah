@@ -39,6 +39,8 @@ class HomeScreen extends ConsumerWidget {
             color: AppColors.bgDefault,
             child: RefreshIndicator(
               color: AppColors.brand,
+              // Drop the spinner below the status bar / notch, not under it.
+              displacement: topInset + AppSpacing.s5,
               onRefresh: () async {
                 ref
                   ..invalidate(runningAuditsProvider)
