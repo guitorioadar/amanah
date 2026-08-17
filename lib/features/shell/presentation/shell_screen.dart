@@ -16,7 +16,7 @@ class ShellScreen extends StatelessWidget {
     _TabSpec('Home', 'House'),
     _TabSpec('Audits', 'ClipboardText'),
     _TabSpec('Expenses', 'Calculator'),
-    _TabSpec('Profile', 'User'),
+    _TabSpec('Profile', 'User', image: 'assets/images/2.0x/avatar.png'),
   ];
 
   @override
@@ -35,8 +35,8 @@ class ShellScreen extends StatelessWidget {
         destinations: [
           for (final tab in _tabs)
             NavigationDestination(
-              icon: _NavIcon(tab.icon, selected: false),
-              selectedIcon: _NavIcon(tab.icon, selected: true),
+              icon: _NavIcon(tab.icon, image: tab.image, selected: false),
+              selectedIcon: _NavIcon(tab.icon, image: tab.image, selected: true),
               label: tab.label,
             ),
         ],
@@ -46,9 +46,12 @@ class ShellScreen extends StatelessWidget {
 }
 
 class _TabSpec {
-  const _TabSpec(this.label, this.icon);
+  const _TabSpec(this.label, this.icon, {this.image});
   final String label;
   final String icon;
+
+  /// Optional raster used instead of the SVG glyph (e.g. the Profile avatar).
+  final String? image;
 }
 
 /// Global "+ Expense" action. Fixed 98×36 pill per design (smaller than a
@@ -88,12 +91,16 @@ class _ExpenseButton extends StatelessWidget {
 }
 
 class _NavIcon extends StatelessWidget {
-  const _NavIcon(this.name, {required this.selected});
+  const _NavIcon(this.name, {required this.selected, this.image});
   final String name;
   final bool selected;
+  final String? image;
 
   @override
   Widget build(BuildContext context) {
+    if (image != null) {
+      return Image.asset(image!, width: 22, height: 22);
+    }
     final weight = selected ? 'fill' : 'line';
     return SvgPicture.asset(
       'assets/icons/$weight/$name.svg',
