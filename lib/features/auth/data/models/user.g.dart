@@ -23,11 +23,11 @@ _User _$UserFromJson(Map<String, dynamic> json) => _User(
   passwordResetTokenExpiresAt:
       json['password_reset_token_expires_at'] as String?,
   roleId: (json['role_id'] as num?)?.toInt(),
-  address: json['address'] as String?,
+  address: json['address'] as Map<String, dynamic>?,
   role: json['role'] as Map<String, dynamic>?,
   roleLabel: json['role_label'] as String?,
   profilePictureUrl: json['profile_picture_url'] as String?,
-  profilePicture: json['profile_picture'] as String?,
+  profilePicture: json['profile_picture'] as Map<String, dynamic>?,
 );
 
 Map<String, dynamic> _$UserToJson(_User instance) => <String, dynamic>{

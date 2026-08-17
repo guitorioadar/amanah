@@ -9,7 +9,9 @@ part 'user.g.dart';
 @freezed
 sealed class User with _$User {
   const factory User({
-    @JsonKey(fromJson: _idToString) required String id, required String name, required String email,
+    @JsonKey(fromJson: _idToString) required String id,
+    required String name,
+    required String email,
     @JsonKey(name: 'mobile_number') String? mobileNumber,
     @JsonKey(name: 'is_active') bool? isActive,
     @JsonKey(name: 'invitation_token_expires_at') String? invitationTokenExpiresAt,
@@ -21,10 +23,12 @@ sealed class User with _$User {
     @JsonKey(name: 'deleted_at') String? deletedAt,
     @JsonKey(name: 'is_login_alert') bool? isLoginAlert,
     @JsonKey(name: 'password_reset_token_expires_at') String? passwordResetTokenExpiresAt,
-    @JsonKey(name: 'role_id') int? roleId, String? address, Map<String, dynamic>? role,
+    @JsonKey(name: 'role_id') int? roleId,
+    Map<String, dynamic>? address,
+    Map<String, dynamic>? role,
     @JsonKey(name: 'role_label') String? roleLabel,
     @JsonKey(name: 'profile_picture_url') String? profilePictureUrl,
-    @JsonKey(name: 'profile_picture') String? profilePicture,
+    @JsonKey(name: 'profile_picture') Map<String, dynamic>? profilePicture,
   }) = _User;
 
   factory User.fromJson(Map<String, dynamic> json) => _$UserFromJson(json);

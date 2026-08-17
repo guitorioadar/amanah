@@ -4,6 +4,7 @@ import 'package:amanah/core/theme/app_spacing.dart';
 import 'package:amanah/core/theme/app_text_styles.dart';
 import 'package:amanah/features/auth/data/models/user.dart';
 import 'package:amanah/features/auth/presentation/providers/session_providers.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -141,10 +142,11 @@ class _Avatar extends StatelessWidget {
       ),
       child: ClipOval(
         child: (url != null && url!.isNotEmpty)
-            ? Image.network(
-                url!,
+            ? CachedNetworkImage(
+                imageUrl: url!,
                 fit: BoxFit.cover,
-                errorBuilder: (_, _, _) => _placeholder(),
+                placeholder: (_, _) => _placeholder(),
+                errorWidget: (_, _, _) => _placeholder(),
               )
             : _placeholder(),
       ),

@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$User {
 
-@JsonKey(fromJson: _idToString) String get id; String get name; String get email;@JsonKey(name: 'mobile_number') String? get mobileNumber;@JsonKey(name: 'is_active') bool? get isActive;@JsonKey(name: 'invitation_token_expires_at') String? get invitationTokenExpiresAt;@JsonKey(name: 'email_verified_at') String? get emailVerifiedAt;@JsonKey(name: 'created_by') Object? get createdBy;@JsonKey(name: 'updated_by') Object? get updatedBy;@JsonKey(name: 'created_at') String? get createdAt;@JsonKey(name: 'updated_at') String? get updatedAt;@JsonKey(name: 'deleted_at') String? get deletedAt;@JsonKey(name: 'is_login_alert') bool? get isLoginAlert;@JsonKey(name: 'password_reset_token_expires_at') String? get passwordResetTokenExpiresAt;@JsonKey(name: 'role_id') int? get roleId; String? get address; Map<String, dynamic>? get role;@JsonKey(name: 'role_label') String? get roleLabel;@JsonKey(name: 'profile_picture_url') String? get profilePictureUrl;@JsonKey(name: 'profile_picture') String? get profilePicture;
+@JsonKey(fromJson: _idToString) String get id; String get name; String get email;@JsonKey(name: 'mobile_number') String? get mobileNumber;@JsonKey(name: 'is_active') bool? get isActive;@JsonKey(name: 'invitation_token_expires_at') String? get invitationTokenExpiresAt;@JsonKey(name: 'email_verified_at') String? get emailVerifiedAt;@JsonKey(name: 'created_by') Object? get createdBy;@JsonKey(name: 'updated_by') Object? get updatedBy;@JsonKey(name: 'created_at') String? get createdAt;@JsonKey(name: 'updated_at') String? get updatedAt;@JsonKey(name: 'deleted_at') String? get deletedAt;@JsonKey(name: 'is_login_alert') bool? get isLoginAlert;@JsonKey(name: 'password_reset_token_expires_at') String? get passwordResetTokenExpiresAt;@JsonKey(name: 'role_id') int? get roleId; Map<String, dynamic>? get address; Map<String, dynamic>? get role;@JsonKey(name: 'role_label') String? get roleLabel;@JsonKey(name: 'profile_picture_url') String? get profilePictureUrl;@JsonKey(name: 'profile_picture') Map<String, dynamic>? get profilePicture;
 /// Create a copy of User
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,12 +28,12 @@ $UserCopyWith<User> get copyWith => _$UserCopyWithImpl<User>(this as User, _$ide
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is User&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.email, email) || other.email == email)&&(identical(other.mobileNumber, mobileNumber) || other.mobileNumber == mobileNumber)&&(identical(other.isActive, isActive) || other.isActive == isActive)&&(identical(other.invitationTokenExpiresAt, invitationTokenExpiresAt) || other.invitationTokenExpiresAt == invitationTokenExpiresAt)&&(identical(other.emailVerifiedAt, emailVerifiedAt) || other.emailVerifiedAt == emailVerifiedAt)&&const DeepCollectionEquality().equals(other.createdBy, createdBy)&&const DeepCollectionEquality().equals(other.updatedBy, updatedBy)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.deletedAt, deletedAt) || other.deletedAt == deletedAt)&&(identical(other.isLoginAlert, isLoginAlert) || other.isLoginAlert == isLoginAlert)&&(identical(other.passwordResetTokenExpiresAt, passwordResetTokenExpiresAt) || other.passwordResetTokenExpiresAt == passwordResetTokenExpiresAt)&&(identical(other.roleId, roleId) || other.roleId == roleId)&&(identical(other.address, address) || other.address == address)&&const DeepCollectionEquality().equals(other.role, role)&&(identical(other.roleLabel, roleLabel) || other.roleLabel == roleLabel)&&(identical(other.profilePictureUrl, profilePictureUrl) || other.profilePictureUrl == profilePictureUrl)&&(identical(other.profilePicture, profilePicture) || other.profilePicture == profilePicture));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is User&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.email, email) || other.email == email)&&(identical(other.mobileNumber, mobileNumber) || other.mobileNumber == mobileNumber)&&(identical(other.isActive, isActive) || other.isActive == isActive)&&(identical(other.invitationTokenExpiresAt, invitationTokenExpiresAt) || other.invitationTokenExpiresAt == invitationTokenExpiresAt)&&(identical(other.emailVerifiedAt, emailVerifiedAt) || other.emailVerifiedAt == emailVerifiedAt)&&const DeepCollectionEquality().equals(other.createdBy, createdBy)&&const DeepCollectionEquality().equals(other.updatedBy, updatedBy)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.deletedAt, deletedAt) || other.deletedAt == deletedAt)&&(identical(other.isLoginAlert, isLoginAlert) || other.isLoginAlert == isLoginAlert)&&(identical(other.passwordResetTokenExpiresAt, passwordResetTokenExpiresAt) || other.passwordResetTokenExpiresAt == passwordResetTokenExpiresAt)&&(identical(other.roleId, roleId) || other.roleId == roleId)&&const DeepCollectionEquality().equals(other.address, address)&&const DeepCollectionEquality().equals(other.role, role)&&(identical(other.roleLabel, roleLabel) || other.roleLabel == roleLabel)&&(identical(other.profilePictureUrl, profilePictureUrl) || other.profilePictureUrl == profilePictureUrl)&&const DeepCollectionEquality().equals(other.profilePicture, profilePicture));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hashAll([runtimeType,id,name,email,mobileNumber,isActive,invitationTokenExpiresAt,emailVerifiedAt,const DeepCollectionEquality().hash(createdBy),const DeepCollectionEquality().hash(updatedBy),createdAt,updatedAt,deletedAt,isLoginAlert,passwordResetTokenExpiresAt,roleId,address,const DeepCollectionEquality().hash(role),roleLabel,profilePictureUrl,profilePicture]);
+int get hashCode => Object.hashAll([runtimeType,id,name,email,mobileNumber,isActive,invitationTokenExpiresAt,emailVerifiedAt,const DeepCollectionEquality().hash(createdBy),const DeepCollectionEquality().hash(updatedBy),createdAt,updatedAt,deletedAt,isLoginAlert,passwordResetTokenExpiresAt,roleId,const DeepCollectionEquality().hash(address),const DeepCollectionEquality().hash(role),roleLabel,profilePictureUrl,const DeepCollectionEquality().hash(profilePicture)]);
 
 @override
 String toString() {
@@ -48,7 +48,7 @@ abstract mixin class $UserCopyWith<$Res>  {
   factory $UserCopyWith(User value, $Res Function(User) _then) = _$UserCopyWithImpl;
 @useResult
 $Res call({
-@JsonKey(fromJson: _idToString) String id, String name, String email,@JsonKey(name: 'mobile_number') String? mobileNumber,@JsonKey(name: 'is_active') bool? isActive,@JsonKey(name: 'invitation_token_expires_at') String? invitationTokenExpiresAt,@JsonKey(name: 'email_verified_at') String? emailVerifiedAt,@JsonKey(name: 'created_by') Object? createdBy,@JsonKey(name: 'updated_by') Object? updatedBy,@JsonKey(name: 'created_at') String? createdAt,@JsonKey(name: 'updated_at') String? updatedAt,@JsonKey(name: 'deleted_at') String? deletedAt,@JsonKey(name: 'is_login_alert') bool? isLoginAlert,@JsonKey(name: 'password_reset_token_expires_at') String? passwordResetTokenExpiresAt,@JsonKey(name: 'role_id') int? roleId, String? address, Map<String, dynamic>? role,@JsonKey(name: 'role_label') String? roleLabel,@JsonKey(name: 'profile_picture_url') String? profilePictureUrl,@JsonKey(name: 'profile_picture') String? profilePicture
+@JsonKey(fromJson: _idToString) String id, String name, String email,@JsonKey(name: 'mobile_number') String? mobileNumber,@JsonKey(name: 'is_active') bool? isActive,@JsonKey(name: 'invitation_token_expires_at') String? invitationTokenExpiresAt,@JsonKey(name: 'email_verified_at') String? emailVerifiedAt,@JsonKey(name: 'created_by') Object? createdBy,@JsonKey(name: 'updated_by') Object? updatedBy,@JsonKey(name: 'created_at') String? createdAt,@JsonKey(name: 'updated_at') String? updatedAt,@JsonKey(name: 'deleted_at') String? deletedAt,@JsonKey(name: 'is_login_alert') bool? isLoginAlert,@JsonKey(name: 'password_reset_token_expires_at') String? passwordResetTokenExpiresAt,@JsonKey(name: 'role_id') int? roleId, Map<String, dynamic>? address, Map<String, dynamic>? role,@JsonKey(name: 'role_label') String? roleLabel,@JsonKey(name: 'profile_picture_url') String? profilePictureUrl,@JsonKey(name: 'profile_picture') Map<String, dynamic>? profilePicture
 });
 
 
@@ -81,11 +81,11 @@ as String?,isLoginAlert: freezed == isLoginAlert ? _self.isLoginAlert : isLoginA
 as bool?,passwordResetTokenExpiresAt: freezed == passwordResetTokenExpiresAt ? _self.passwordResetTokenExpiresAt : passwordResetTokenExpiresAt // ignore: cast_nullable_to_non_nullable
 as String?,roleId: freezed == roleId ? _self.roleId : roleId // ignore: cast_nullable_to_non_nullable
 as int?,address: freezed == address ? _self.address : address // ignore: cast_nullable_to_non_nullable
-as String?,role: freezed == role ? _self.role : role // ignore: cast_nullable_to_non_nullable
+as Map<String, dynamic>?,role: freezed == role ? _self.role : role // ignore: cast_nullable_to_non_nullable
 as Map<String, dynamic>?,roleLabel: freezed == roleLabel ? _self.roleLabel : roleLabel // ignore: cast_nullable_to_non_nullable
 as String?,profilePictureUrl: freezed == profilePictureUrl ? _self.profilePictureUrl : profilePictureUrl // ignore: cast_nullable_to_non_nullable
 as String?,profilePicture: freezed == profilePicture ? _self.profilePicture : profilePicture // ignore: cast_nullable_to_non_nullable
-as String?,
+as Map<String, dynamic>?,
   ));
 }
 
@@ -167,7 +167,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@JsonKey(fromJson: _idToString)  String id,  String name,  String email, @JsonKey(name: 'mobile_number')  String? mobileNumber, @JsonKey(name: 'is_active')  bool? isActive, @JsonKey(name: 'invitation_token_expires_at')  String? invitationTokenExpiresAt, @JsonKey(name: 'email_verified_at')  String? emailVerifiedAt, @JsonKey(name: 'created_by')  Object? createdBy, @JsonKey(name: 'updated_by')  Object? updatedBy, @JsonKey(name: 'created_at')  String? createdAt, @JsonKey(name: 'updated_at')  String? updatedAt, @JsonKey(name: 'deleted_at')  String? deletedAt, @JsonKey(name: 'is_login_alert')  bool? isLoginAlert, @JsonKey(name: 'password_reset_token_expires_at')  String? passwordResetTokenExpiresAt, @JsonKey(name: 'role_id')  int? roleId,  String? address,  Map<String, dynamic>? role, @JsonKey(name: 'role_label')  String? roleLabel, @JsonKey(name: 'profile_picture_url')  String? profilePictureUrl, @JsonKey(name: 'profile_picture')  String? profilePicture)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@JsonKey(fromJson: _idToString)  String id,  String name,  String email, @JsonKey(name: 'mobile_number')  String? mobileNumber, @JsonKey(name: 'is_active')  bool? isActive, @JsonKey(name: 'invitation_token_expires_at')  String? invitationTokenExpiresAt, @JsonKey(name: 'email_verified_at')  String? emailVerifiedAt, @JsonKey(name: 'created_by')  Object? createdBy, @JsonKey(name: 'updated_by')  Object? updatedBy, @JsonKey(name: 'created_at')  String? createdAt, @JsonKey(name: 'updated_at')  String? updatedAt, @JsonKey(name: 'deleted_at')  String? deletedAt, @JsonKey(name: 'is_login_alert')  bool? isLoginAlert, @JsonKey(name: 'password_reset_token_expires_at')  String? passwordResetTokenExpiresAt, @JsonKey(name: 'role_id')  int? roleId,  Map<String, dynamic>? address,  Map<String, dynamic>? role, @JsonKey(name: 'role_label')  String? roleLabel, @JsonKey(name: 'profile_picture_url')  String? profilePictureUrl, @JsonKey(name: 'profile_picture')  Map<String, dynamic>? profilePicture)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _User() when $default != null:
 return $default(_that.id,_that.name,_that.email,_that.mobileNumber,_that.isActive,_that.invitationTokenExpiresAt,_that.emailVerifiedAt,_that.createdBy,_that.updatedBy,_that.createdAt,_that.updatedAt,_that.deletedAt,_that.isLoginAlert,_that.passwordResetTokenExpiresAt,_that.roleId,_that.address,_that.role,_that.roleLabel,_that.profilePictureUrl,_that.profilePicture);case _:
@@ -188,7 +188,7 @@ return $default(_that.id,_that.name,_that.email,_that.mobileNumber,_that.isActiv
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@JsonKey(fromJson: _idToString)  String id,  String name,  String email, @JsonKey(name: 'mobile_number')  String? mobileNumber, @JsonKey(name: 'is_active')  bool? isActive, @JsonKey(name: 'invitation_token_expires_at')  String? invitationTokenExpiresAt, @JsonKey(name: 'email_verified_at')  String? emailVerifiedAt, @JsonKey(name: 'created_by')  Object? createdBy, @JsonKey(name: 'updated_by')  Object? updatedBy, @JsonKey(name: 'created_at')  String? createdAt, @JsonKey(name: 'updated_at')  String? updatedAt, @JsonKey(name: 'deleted_at')  String? deletedAt, @JsonKey(name: 'is_login_alert')  bool? isLoginAlert, @JsonKey(name: 'password_reset_token_expires_at')  String? passwordResetTokenExpiresAt, @JsonKey(name: 'role_id')  int? roleId,  String? address,  Map<String, dynamic>? role, @JsonKey(name: 'role_label')  String? roleLabel, @JsonKey(name: 'profile_picture_url')  String? profilePictureUrl, @JsonKey(name: 'profile_picture')  String? profilePicture)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@JsonKey(fromJson: _idToString)  String id,  String name,  String email, @JsonKey(name: 'mobile_number')  String? mobileNumber, @JsonKey(name: 'is_active')  bool? isActive, @JsonKey(name: 'invitation_token_expires_at')  String? invitationTokenExpiresAt, @JsonKey(name: 'email_verified_at')  String? emailVerifiedAt, @JsonKey(name: 'created_by')  Object? createdBy, @JsonKey(name: 'updated_by')  Object? updatedBy, @JsonKey(name: 'created_at')  String? createdAt, @JsonKey(name: 'updated_at')  String? updatedAt, @JsonKey(name: 'deleted_at')  String? deletedAt, @JsonKey(name: 'is_login_alert')  bool? isLoginAlert, @JsonKey(name: 'password_reset_token_expires_at')  String? passwordResetTokenExpiresAt, @JsonKey(name: 'role_id')  int? roleId,  Map<String, dynamic>? address,  Map<String, dynamic>? role, @JsonKey(name: 'role_label')  String? roleLabel, @JsonKey(name: 'profile_picture_url')  String? profilePictureUrl, @JsonKey(name: 'profile_picture')  Map<String, dynamic>? profilePicture)  $default,) {final _that = this;
 switch (_that) {
 case _User():
 return $default(_that.id,_that.name,_that.email,_that.mobileNumber,_that.isActive,_that.invitationTokenExpiresAt,_that.emailVerifiedAt,_that.createdBy,_that.updatedBy,_that.createdAt,_that.updatedAt,_that.deletedAt,_that.isLoginAlert,_that.passwordResetTokenExpiresAt,_that.roleId,_that.address,_that.role,_that.roleLabel,_that.profilePictureUrl,_that.profilePicture);}
@@ -205,7 +205,7 @@ return $default(_that.id,_that.name,_that.email,_that.mobileNumber,_that.isActiv
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@JsonKey(fromJson: _idToString)  String id,  String name,  String email, @JsonKey(name: 'mobile_number')  String? mobileNumber, @JsonKey(name: 'is_active')  bool? isActive, @JsonKey(name: 'invitation_token_expires_at')  String? invitationTokenExpiresAt, @JsonKey(name: 'email_verified_at')  String? emailVerifiedAt, @JsonKey(name: 'created_by')  Object? createdBy, @JsonKey(name: 'updated_by')  Object? updatedBy, @JsonKey(name: 'created_at')  String? createdAt, @JsonKey(name: 'updated_at')  String? updatedAt, @JsonKey(name: 'deleted_at')  String? deletedAt, @JsonKey(name: 'is_login_alert')  bool? isLoginAlert, @JsonKey(name: 'password_reset_token_expires_at')  String? passwordResetTokenExpiresAt, @JsonKey(name: 'role_id')  int? roleId,  String? address,  Map<String, dynamic>? role, @JsonKey(name: 'role_label')  String? roleLabel, @JsonKey(name: 'profile_picture_url')  String? profilePictureUrl, @JsonKey(name: 'profile_picture')  String? profilePicture)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@JsonKey(fromJson: _idToString)  String id,  String name,  String email, @JsonKey(name: 'mobile_number')  String? mobileNumber, @JsonKey(name: 'is_active')  bool? isActive, @JsonKey(name: 'invitation_token_expires_at')  String? invitationTokenExpiresAt, @JsonKey(name: 'email_verified_at')  String? emailVerifiedAt, @JsonKey(name: 'created_by')  Object? createdBy, @JsonKey(name: 'updated_by')  Object? updatedBy, @JsonKey(name: 'created_at')  String? createdAt, @JsonKey(name: 'updated_at')  String? updatedAt, @JsonKey(name: 'deleted_at')  String? deletedAt, @JsonKey(name: 'is_login_alert')  bool? isLoginAlert, @JsonKey(name: 'password_reset_token_expires_at')  String? passwordResetTokenExpiresAt, @JsonKey(name: 'role_id')  int? roleId,  Map<String, dynamic>? address,  Map<String, dynamic>? role, @JsonKey(name: 'role_label')  String? roleLabel, @JsonKey(name: 'profile_picture_url')  String? profilePictureUrl, @JsonKey(name: 'profile_picture')  Map<String, dynamic>? profilePicture)?  $default,) {final _that = this;
 switch (_that) {
 case _User() when $default != null:
 return $default(_that.id,_that.name,_that.email,_that.mobileNumber,_that.isActive,_that.invitationTokenExpiresAt,_that.emailVerifiedAt,_that.createdBy,_that.updatedBy,_that.createdAt,_that.updatedAt,_that.deletedAt,_that.isLoginAlert,_that.passwordResetTokenExpiresAt,_that.roleId,_that.address,_that.role,_that.roleLabel,_that.profilePictureUrl,_that.profilePicture);case _:
@@ -220,7 +220,7 @@ return $default(_that.id,_that.name,_that.email,_that.mobileNumber,_that.isActiv
 @JsonSerializable()
 
 class _User implements User {
-  const _User({@JsonKey(fromJson: _idToString) required this.id, required this.name, required this.email, @JsonKey(name: 'mobile_number') this.mobileNumber, @JsonKey(name: 'is_active') this.isActive, @JsonKey(name: 'invitation_token_expires_at') this.invitationTokenExpiresAt, @JsonKey(name: 'email_verified_at') this.emailVerifiedAt, @JsonKey(name: 'created_by') this.createdBy, @JsonKey(name: 'updated_by') this.updatedBy, @JsonKey(name: 'created_at') this.createdAt, @JsonKey(name: 'updated_at') this.updatedAt, @JsonKey(name: 'deleted_at') this.deletedAt, @JsonKey(name: 'is_login_alert') this.isLoginAlert, @JsonKey(name: 'password_reset_token_expires_at') this.passwordResetTokenExpiresAt, @JsonKey(name: 'role_id') this.roleId, this.address, final  Map<String, dynamic>? role, @JsonKey(name: 'role_label') this.roleLabel, @JsonKey(name: 'profile_picture_url') this.profilePictureUrl, @JsonKey(name: 'profile_picture') this.profilePicture}): _role = role;
+  const _User({@JsonKey(fromJson: _idToString) required this.id, required this.name, required this.email, @JsonKey(name: 'mobile_number') this.mobileNumber, @JsonKey(name: 'is_active') this.isActive, @JsonKey(name: 'invitation_token_expires_at') this.invitationTokenExpiresAt, @JsonKey(name: 'email_verified_at') this.emailVerifiedAt, @JsonKey(name: 'created_by') this.createdBy, @JsonKey(name: 'updated_by') this.updatedBy, @JsonKey(name: 'created_at') this.createdAt, @JsonKey(name: 'updated_at') this.updatedAt, @JsonKey(name: 'deleted_at') this.deletedAt, @JsonKey(name: 'is_login_alert') this.isLoginAlert, @JsonKey(name: 'password_reset_token_expires_at') this.passwordResetTokenExpiresAt, @JsonKey(name: 'role_id') this.roleId, final  Map<String, dynamic>? address, final  Map<String, dynamic>? role, @JsonKey(name: 'role_label') this.roleLabel, @JsonKey(name: 'profile_picture_url') this.profilePictureUrl, @JsonKey(name: 'profile_picture') final  Map<String, dynamic>? profilePicture}): _address = address,_role = role,_profilePicture = profilePicture;
   factory _User.fromJson(Map<String, dynamic> json) => _$UserFromJson(json);
 
 @override@JsonKey(fromJson: _idToString) final  String id;
@@ -238,7 +238,15 @@ class _User implements User {
 @override@JsonKey(name: 'is_login_alert') final  bool? isLoginAlert;
 @override@JsonKey(name: 'password_reset_token_expires_at') final  String? passwordResetTokenExpiresAt;
 @override@JsonKey(name: 'role_id') final  int? roleId;
-@override final  String? address;
+ final  Map<String, dynamic>? _address;
+@override Map<String, dynamic>? get address {
+  final value = _address;
+  if (value == null) return null;
+  if (_address is EqualUnmodifiableMapView) return _address;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableMapView(value);
+}
+
  final  Map<String, dynamic>? _role;
 @override Map<String, dynamic>? get role {
   final value = _role;
@@ -250,7 +258,15 @@ class _User implements User {
 
 @override@JsonKey(name: 'role_label') final  String? roleLabel;
 @override@JsonKey(name: 'profile_picture_url') final  String? profilePictureUrl;
-@override@JsonKey(name: 'profile_picture') final  String? profilePicture;
+ final  Map<String, dynamic>? _profilePicture;
+@override@JsonKey(name: 'profile_picture') Map<String, dynamic>? get profilePicture {
+  final value = _profilePicture;
+  if (value == null) return null;
+  if (_profilePicture is EqualUnmodifiableMapView) return _profilePicture;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableMapView(value);
+}
+
 
 /// Create a copy of User
 /// with the given fields replaced by the non-null parameter values.
@@ -265,12 +281,12 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _User&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.email, email) || other.email == email)&&(identical(other.mobileNumber, mobileNumber) || other.mobileNumber == mobileNumber)&&(identical(other.isActive, isActive) || other.isActive == isActive)&&(identical(other.invitationTokenExpiresAt, invitationTokenExpiresAt) || other.invitationTokenExpiresAt == invitationTokenExpiresAt)&&(identical(other.emailVerifiedAt, emailVerifiedAt) || other.emailVerifiedAt == emailVerifiedAt)&&const DeepCollectionEquality().equals(other.createdBy, createdBy)&&const DeepCollectionEquality().equals(other.updatedBy, updatedBy)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.deletedAt, deletedAt) || other.deletedAt == deletedAt)&&(identical(other.isLoginAlert, isLoginAlert) || other.isLoginAlert == isLoginAlert)&&(identical(other.passwordResetTokenExpiresAt, passwordResetTokenExpiresAt) || other.passwordResetTokenExpiresAt == passwordResetTokenExpiresAt)&&(identical(other.roleId, roleId) || other.roleId == roleId)&&(identical(other.address, address) || other.address == address)&&const DeepCollectionEquality().equals(other._role, _role)&&(identical(other.roleLabel, roleLabel) || other.roleLabel == roleLabel)&&(identical(other.profilePictureUrl, profilePictureUrl) || other.profilePictureUrl == profilePictureUrl)&&(identical(other.profilePicture, profilePicture) || other.profilePicture == profilePicture));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _User&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.email, email) || other.email == email)&&(identical(other.mobileNumber, mobileNumber) || other.mobileNumber == mobileNumber)&&(identical(other.isActive, isActive) || other.isActive == isActive)&&(identical(other.invitationTokenExpiresAt, invitationTokenExpiresAt) || other.invitationTokenExpiresAt == invitationTokenExpiresAt)&&(identical(other.emailVerifiedAt, emailVerifiedAt) || other.emailVerifiedAt == emailVerifiedAt)&&const DeepCollectionEquality().equals(other.createdBy, createdBy)&&const DeepCollectionEquality().equals(other.updatedBy, updatedBy)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.updatedAt, updatedAt) || other.updatedAt == updatedAt)&&(identical(other.deletedAt, deletedAt) || other.deletedAt == deletedAt)&&(identical(other.isLoginAlert, isLoginAlert) || other.isLoginAlert == isLoginAlert)&&(identical(other.passwordResetTokenExpiresAt, passwordResetTokenExpiresAt) || other.passwordResetTokenExpiresAt == passwordResetTokenExpiresAt)&&(identical(other.roleId, roleId) || other.roleId == roleId)&&const DeepCollectionEquality().equals(other._address, _address)&&const DeepCollectionEquality().equals(other._role, _role)&&(identical(other.roleLabel, roleLabel) || other.roleLabel == roleLabel)&&(identical(other.profilePictureUrl, profilePictureUrl) || other.profilePictureUrl == profilePictureUrl)&&const DeepCollectionEquality().equals(other._profilePicture, _profilePicture));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hashAll([runtimeType,id,name,email,mobileNumber,isActive,invitationTokenExpiresAt,emailVerifiedAt,const DeepCollectionEquality().hash(createdBy),const DeepCollectionEquality().hash(updatedBy),createdAt,updatedAt,deletedAt,isLoginAlert,passwordResetTokenExpiresAt,roleId,address,const DeepCollectionEquality().hash(_role),roleLabel,profilePictureUrl,profilePicture]);
+int get hashCode => Object.hashAll([runtimeType,id,name,email,mobileNumber,isActive,invitationTokenExpiresAt,emailVerifiedAt,const DeepCollectionEquality().hash(createdBy),const DeepCollectionEquality().hash(updatedBy),createdAt,updatedAt,deletedAt,isLoginAlert,passwordResetTokenExpiresAt,roleId,const DeepCollectionEquality().hash(_address),const DeepCollectionEquality().hash(_role),roleLabel,profilePictureUrl,const DeepCollectionEquality().hash(_profilePicture)]);
 
 @override
 String toString() {
@@ -285,7 +301,7 @@ abstract mixin class _$UserCopyWith<$Res> implements $UserCopyWith<$Res> {
   factory _$UserCopyWith(_User value, $Res Function(_User) _then) = __$UserCopyWithImpl;
 @override @useResult
 $Res call({
-@JsonKey(fromJson: _idToString) String id, String name, String email,@JsonKey(name: 'mobile_number') String? mobileNumber,@JsonKey(name: 'is_active') bool? isActive,@JsonKey(name: 'invitation_token_expires_at') String? invitationTokenExpiresAt,@JsonKey(name: 'email_verified_at') String? emailVerifiedAt,@JsonKey(name: 'created_by') Object? createdBy,@JsonKey(name: 'updated_by') Object? updatedBy,@JsonKey(name: 'created_at') String? createdAt,@JsonKey(name: 'updated_at') String? updatedAt,@JsonKey(name: 'deleted_at') String? deletedAt,@JsonKey(name: 'is_login_alert') bool? isLoginAlert,@JsonKey(name: 'password_reset_token_expires_at') String? passwordResetTokenExpiresAt,@JsonKey(name: 'role_id') int? roleId, String? address, Map<String, dynamic>? role,@JsonKey(name: 'role_label') String? roleLabel,@JsonKey(name: 'profile_picture_url') String? profilePictureUrl,@JsonKey(name: 'profile_picture') String? profilePicture
+@JsonKey(fromJson: _idToString) String id, String name, String email,@JsonKey(name: 'mobile_number') String? mobileNumber,@JsonKey(name: 'is_active') bool? isActive,@JsonKey(name: 'invitation_token_expires_at') String? invitationTokenExpiresAt,@JsonKey(name: 'email_verified_at') String? emailVerifiedAt,@JsonKey(name: 'created_by') Object? createdBy,@JsonKey(name: 'updated_by') Object? updatedBy,@JsonKey(name: 'created_at') String? createdAt,@JsonKey(name: 'updated_at') String? updatedAt,@JsonKey(name: 'deleted_at') String? deletedAt,@JsonKey(name: 'is_login_alert') bool? isLoginAlert,@JsonKey(name: 'password_reset_token_expires_at') String? passwordResetTokenExpiresAt,@JsonKey(name: 'role_id') int? roleId, Map<String, dynamic>? address, Map<String, dynamic>? role,@JsonKey(name: 'role_label') String? roleLabel,@JsonKey(name: 'profile_picture_url') String? profilePictureUrl,@JsonKey(name: 'profile_picture') Map<String, dynamic>? profilePicture
 });
 
 
@@ -317,12 +333,12 @@ as String?,deletedAt: freezed == deletedAt ? _self.deletedAt : deletedAt // igno
 as String?,isLoginAlert: freezed == isLoginAlert ? _self.isLoginAlert : isLoginAlert // ignore: cast_nullable_to_non_nullable
 as bool?,passwordResetTokenExpiresAt: freezed == passwordResetTokenExpiresAt ? _self.passwordResetTokenExpiresAt : passwordResetTokenExpiresAt // ignore: cast_nullable_to_non_nullable
 as String?,roleId: freezed == roleId ? _self.roleId : roleId // ignore: cast_nullable_to_non_nullable
-as int?,address: freezed == address ? _self.address : address // ignore: cast_nullable_to_non_nullable
-as String?,role: freezed == role ? _self._role : role // ignore: cast_nullable_to_non_nullable
+as int?,address: freezed == address ? _self._address : address // ignore: cast_nullable_to_non_nullable
+as Map<String, dynamic>?,role: freezed == role ? _self._role : role // ignore: cast_nullable_to_non_nullable
 as Map<String, dynamic>?,roleLabel: freezed == roleLabel ? _self.roleLabel : roleLabel // ignore: cast_nullable_to_non_nullable
 as String?,profilePictureUrl: freezed == profilePictureUrl ? _self.profilePictureUrl : profilePictureUrl // ignore: cast_nullable_to_non_nullable
-as String?,profilePicture: freezed == profilePicture ? _self.profilePicture : profilePicture // ignore: cast_nullable_to_non_nullable
-as String?,
+as String?,profilePicture: freezed == profilePicture ? _self._profilePicture : profilePicture // ignore: cast_nullable_to_non_nullable
+as Map<String, dynamic>?,
   ));
 }
 
