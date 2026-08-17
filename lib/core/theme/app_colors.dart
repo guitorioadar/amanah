@@ -59,4 +59,17 @@ abstract final class AppColors {
 
   // ── Scrim (bottom-sheet / dialog backdrop) ──
   static final Color scrim = AppPalette.neutral12.withValues(alpha: 0.40);
+
+  /// Fully transparent — status-bar/surface tints that must paint nothing.
+  static const Color transparent = Color(0x00000000);
+
+  /// Elevation shadow for raised surfaces (bottom nav, sheets).
+  static final Color shadow = AppPalette.neutral12.withValues(alpha: 0.08);
+
+  // ── Skeleton loaders (shimmer base → highlight) ──
+  static const Color skeletonBase = AppPalette.neutral4;
+  static const Color skeletonHighlight = AppPalette.neutral2;
+
+  /// In-progress audit ring / amber accent.
+  static const Color iconAmber = AppPalette.orange10;
 }

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:amanah/core/theme/app_colors.dart';
 import 'package:amanah/core/theme/app_spacing.dart';
+import 'package:amanah/core/theme/app_system_ui.dart';
 import 'package:amanah/core/theme/app_text_styles.dart';
 import 'package:amanah/core/widgets/app_avatar.dart';
 import 'package:amanah/core/widgets/audit_card.dart';
@@ -11,6 +12,7 @@ import 'package:amanah/features/audits/data/models/audit.dart';
 import 'package:amanah/features/audits/presentation/providers/audit_providers.dart';
 import 'package:amanah/features/auth/presentation/providers/session_providers.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
@@ -27,56 +29,74 @@ class HomeScreen extends ConsumerWidget {
 
     final bottomClear =
         MediaQuery.of(context).viewPadding.bottom + AppSpacing.s9 + 56;
+    final topInset = MediaQuery.of(context).viewPadding.top;
 
-    return ColoredBox(
-      color: AppColors.bgDefault,
-      child: RefreshIndicator(
-        color: AppColors.brand,
-        onRefresh: () async {
-          ref
-            ..invalidate(runningAuditsProvider)
-            ..invalidate(upcomingAuditsProvider);
-          try {
-            await Future.wait([
-              ref.read(runningAuditsProvider.future),
-              ref.read(upcomingAuditsProvider.future),
-            ]);
-          } on Object {
-            // Errors surface in each section's error state; the pull just ends.
-          }
-        },
-        child: SingleChildScrollView(
-          // Clamp on both platforms so iOS doesn't bounce/over-scroll the
-          // content after a pull-to-refresh (Android already clamps).
-          physics: const AlwaysScrollableScrollPhysics(
-            parent: ClampingScrollPhysics(),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              _Header(
-                name: user?.name,
-                avatarUrl: user?.profilePictureUrl,
-              ),
-              Padding(
-                padding: EdgeInsets.fromLTRB(
-                  AppSpacing.s4,
-                  AppSpacing.s4,
-                  AppSpacing.s4,
-                  bottomClear,
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: AppSystemUi.light,
+      child: Stack(
+        children: [
+          ColoredBox(
+            color: AppColors.bgDefault,
+            child: RefreshIndicator(
+              color: AppColors.brand,
+              onRefresh: () async {
+                ref
+                  ..invalidate(runningAuditsProvider)
+                  ..invalidate(upcomingAuditsProvider);
+                try {
+                  await Future.wait([
+                    ref.read(runningAuditsProvider.future),
+                    ref.read(upcomingAuditsProvider.future),
+                  ]);
+                } on Object {
+                  // Errors surface in each section's error state; the pull just ends.
+                }
+              },
+              child: SingleChildScrollView(
+                // Clamp on both platforms so iOS doesn't bounce/over-scroll the
+                // content after a pull-to-refresh (Android already clamps).
+                physics: const AlwaysScrollableScrollPhysics(
+                  parent: ClampingScrollPhysics(),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Text('Upcoming audits', style: AppText.headingL),
-                    const SizedBox(height: AppSpacing.s5),
-                    const _UpcomingSection(),
+                    _Header(
+                      name: user?.name,
+                      avatarUrl: user?.profilePictureUrl,
+                    ),
+                    Padding(
+                      padding: EdgeInsets.fromLTRB(
+                        AppSpacing.s4,
+                        AppSpacing.s4,
+                        AppSpacing.s4,
+                        bottomClear,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Text('Upcoming audits', style: AppText.headingL),
+                          const SizedBox(height: AppSpacing.s5),
+                          const _UpcomingSection(),
+                        ],
+                      ),
+                    ),
                   ],
                 ),
               ),
-            ],
+            ),
           ),
-        ),
+          // Keeps the status-bar area navy even after the header scrolls up.
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            height: topInset,
+            child: const IgnorePointer(
+              child: ColoredBox(color: AppColors.bgSolid),
+            ),
+          ),
+        ],
       ),
     );
   }

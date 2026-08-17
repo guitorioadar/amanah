@@ -1,10 +1,12 @@
 import 'package:amanah/core/theme/app_colors.dart';
 import 'package:amanah/core/theme/app_spacing.dart';
+import 'package:amanah/core/theme/app_system_ui.dart';
 import 'package:amanah/core/theme/app_text_styles.dart';
 import 'package:amanah/core/widgets/app_avatar.dart';
 import 'package:amanah/features/auth/data/models/user.dart';
 import 'package:amanah/features/auth/presentation/providers/session_providers.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
@@ -18,70 +20,96 @@ class ProfileScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final user = ref.watch(currentUserProvider);
+    final topInset = MediaQuery.of(context).viewPadding.top;
 
-    return ColoredBox(
-      color: AppColors.bgDefault,
-      child: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            _Header(user: user),
-            const SizedBox(height: AppSpacing.s4),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s4),
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: AppSystemUi.light,
+      child: Stack(
+        children: [
+          ColoredBox(
+            color: AppColors.bgDefault,
+            child: SingleChildScrollView(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const SizedBox(height: AppSpacing.s2),
-                  const _SectionLabel('GENERAL'),
-                  const SizedBox(height: AppSpacing.s2),
-                  _Card(
-                    rows: [
-                      _RowSpec(
-                        icon: 'User',
-                        color: AppColors.iconBrand,
-                        label: 'Personal information',
-                      ),
-                      _RowSpec(
-                        icon: 'Lock',
-                        color: AppColors.iconInformation,
-                        label: 'Sign in & Security',
-                      ),
-                      _RowSpec(
-                        icon: 'Bell',
-                        color: AppColors.iconWarning,
-                        label: 'Notification',
-                      ),
-                    ],
+                  _Header(user: user),
+                  const SizedBox(height: AppSpacing.s4),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.s4,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        const SizedBox(height: AppSpacing.s2),
+                        const _SectionLabel('GENERAL'),
+                        const SizedBox(height: AppSpacing.s2),
+                        _Card(
+                          rows: [
+                            _RowSpec(
+                              icon: 'User',
+                              color: AppColors.iconBrand,
+                              label: 'Personal information',
+                            ),
+                            _RowSpec(
+                              icon: 'Lock',
+                              color: AppColors.iconInformation,
+                              label: 'Sign in & Security',
+                            ),
+                            _RowSpec(
+                              icon: 'Bell',
+                              color: AppColors.iconWarning,
+                              label: 'Notification',
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: AppSpacing.s5),
+                        const _SectionLabel('SUPPORT'),
+                        const SizedBox(height: AppSpacing.s2),
+                        _Card(
+                          rows: [
+                            _RowSpec(
+                              icon: 'ShieldCheck',
+                              color: AppColors.iconSuccess,
+                              label: 'Privacy policy',
+                            ),
+                            _RowSpec(
+                              icon: 'FileText',
+                              color: AppColors.iconMagenta,
+                              label: 'Terms & conditions',
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: AppSpacing.s5),
+                        _SignOutButton(
+                          onPressed: () => context.push('/signing-out'),
+                        ),
+                        const SizedBox(height: AppSpacing.s5),
+                        const _BuildInfo(),
+                        // Clears the floating Expense button + bottom nav bar.
+                        SizedBox(
+                          height:
+                              AppSpacing.s9 +
+                              MediaQuery.of(context).viewPadding.bottom +
+                              56,
+                        ),
+                      ],
+                    ),
                   ),
-                  const SizedBox(height: AppSpacing.s5),
-                  const _SectionLabel('SUPPORT'),
-                  const SizedBox(height: AppSpacing.s2),
-                  _Card(
-                    rows: [
-                      _RowSpec(
-                        icon: 'ShieldCheck',
-                        color: AppColors.iconSuccess,
-                        label: 'Privacy policy',
-                      ),
-                      _RowSpec(
-                        icon: 'FileText',
-                        color: AppColors.iconMagenta,
-                        label: 'Terms & conditions',
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: AppSpacing.s5),
-                  _SignOutButton(onPressed: () => context.push('/signing-out')),
-                  const SizedBox(height: AppSpacing.s5),
-                  const _BuildInfo(),
-                  // Clears the floating Expense button + bottom nav bar.
-                  SizedBox(height: AppSpacing.s9 + MediaQuery.of(context).viewPadding.bottom + 56),
                 ],
               ),
             ),
-          ],
-        ),
+          ),
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            height: topInset,
+            child: const IgnorePointer(
+              child: ColoredBox(color: AppColors.bgSolid),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -237,7 +265,10 @@ class _BuildInfo extends StatelessWidget {
             : 'v${info.version} (${info.buildNumber})';
         return Column(
           children: [
-            Text(version, style: style,),
+            Text(
+              version,
+              style: style,
+            ),
             const SizedBox(height: AppSpacing.s1),
             // Text('env: ${Env.envName}', style: style),
             // const SizedBox(height: AppSpacing.s1),

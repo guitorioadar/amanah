@@ -1,5 +1,4 @@
 import 'package:amanah/core/theme/app_colors.dart';
-import 'package:amanah/core/theme/app_palette.dart';
 import 'package:amanah/core/theme/app_text_styles.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -32,7 +31,7 @@ class ShellScreen extends StatelessWidget {
           border: Border(top: BorderSide(color: AppColors.borderDefault)),
           boxShadow: [
             BoxShadow(
-              color: AppPalette.neutral12.withValues(alpha: 0.08),
+              color: AppColors.shadow,
               blurRadius: 16,
               offset: const Offset(0, -4),
             ),
@@ -47,8 +46,8 @@ class ShellScreen extends StatelessWidget {
               initialLocation: i == navigationShell.currentIndex,
             ),
             backgroundColor: AppColors.bgDefault,
-            surfaceTintColor: Colors.transparent,
-            shadowColor: Colors.transparent,
+            surfaceTintColor: AppColors.transparent,
+            shadowColor: AppColors.transparent,
             elevation: 0,
             indicatorColor: AppColors.bgInfo,
             destinations: [

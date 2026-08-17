@@ -2,9 +2,11 @@ import 'dart:async';
 
 import 'package:amanah/core/theme/app_colors.dart';
 import 'package:amanah/core/theme/app_spacing.dart';
+import 'package:amanah/core/theme/app_system_ui.dart';
 import 'package:amanah/core/theme/app_text_styles.dart';
 import 'package:amanah/features/auth/presentation/providers/session_providers.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// Transitional "Signing out…" screen. Clears the session, then routes to
@@ -35,34 +37,39 @@ class _SigningOutScreenState extends ConsumerState<SigningOutScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [Color(0xFF2B57C4), Color(0xFF0A2472)],
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: AppSystemUi.light,
+      child: DecoratedBox(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Color(0xFF2B57C4), Color(0xFF0A2472)],
+          ),
         ),
-      ),
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        body: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                'Signing out…',
-                style: AppText.headingL.copyWith(color: AppColors.textInverse),
-              ),
-              const SizedBox(height: AppSpacing.s7),
-              const SizedBox(
-                width: 28,
-                height: 28,
-                child: CircularProgressIndicator(
-                  strokeWidth: 3,
-                  color: AppColors.textInverse,
+        child: Scaffold(
+          backgroundColor: AppColors.transparent,
+          body: Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'Signing out…',
+                  style: AppText.headingL.copyWith(
+                    color: AppColors.textInverse,
+                  ),
                 ),
-              ),
-            ],
+                const SizedBox(height: AppSpacing.s7),
+                const SizedBox(
+                  width: 28,
+                  height: 28,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 3,
+                    color: AppColors.textInverse,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

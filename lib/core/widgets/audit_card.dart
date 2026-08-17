@@ -1,7 +1,6 @@
 import 'dart:math' as math;
 
 import 'package:amanah/core/theme/app_colors.dart';
-import 'package:amanah/core/theme/app_palette.dart';
 import 'package:amanah/core/theme/app_spacing.dart';
 import 'package:amanah/core/theme/app_text_styles.dart';
 import 'package:amanah/features/audits/data/models/audit.dart';
@@ -158,7 +157,7 @@ class _Footer extends StatelessWidget {
       children: [
         _ProgressRing(
           percent: audit.progressPercent,
-          color: isCompleted ? AppColors.iconSuccess : AppPalette.orange10,
+          color: isCompleted ? AppColors.iconSuccess : AppColors.iconAmber,
         ),
         const SizedBox(width: AppSpacing.s2),
         Text(

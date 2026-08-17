@@ -1,5 +1,4 @@
 import 'package:amanah/core/theme/app_colors.dart';
-import 'package:amanah/core/theme/app_palette.dart';
 import 'package:amanah/core/theme/app_spacing.dart';
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
@@ -19,8 +18,8 @@ class AuditCardSkeleton extends StatelessWidget {
         border: Border.all(color: AppColors.borderDefault),
       ),
       child: Shimmer.fromColors(
-        baseColor: AppPalette.neutral4,
-        highlightColor: AppPalette.neutral2,
+        baseColor: AppColors.skeletonBase,
+        highlightColor: AppColors.skeletonHighlight,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -88,7 +87,7 @@ class _Bar extends StatelessWidget {
       width: width,
       height: height,
       decoration: BoxDecoration(
-        color: AppPalette.neutral4,
+        color: AppColors.skeletonBase,
         borderRadius: BorderRadius.circular(radius),
       ),
     );

@@ -70,6 +70,7 @@ class _SetNewPasswordScreenState extends ConsumerState<SetNewPasswordScreen> {
   @override
   Widget build(BuildContext context) {
     return AuthScaffold(
+      showBack: true,
       formKey: _formKey,
       autovalidate: _autovalidate,
       children: [
