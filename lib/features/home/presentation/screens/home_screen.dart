@@ -6,6 +6,7 @@ import 'package:amanah/core/theme/app_text_styles.dart';
 import 'package:amanah/core/widgets/app_avatar.dart';
 import 'package:amanah/core/widgets/audit_card.dart';
 import 'package:amanah/core/widgets/empty_state.dart';
+import 'package:amanah/core/widgets/skeletons/audit_card_skeleton.dart';
 import 'package:amanah/features/audits/data/models/audit.dart';
 import 'package:amanah/features/audits/presentation/providers/audit_providers.dart';
 import 'package:amanah/features/auth/presentation/providers/session_providers.dart';
@@ -24,35 +25,57 @@ class HomeScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final user = ref.watch(currentUserProvider);
 
-    final bottomClear = MediaQuery.of(context).viewPadding.bottom + AppSpacing.s9 + 56;
+    final bottomClear =
+        MediaQuery.of(context).viewPadding.bottom + AppSpacing.s9 + 56;
 
     return ColoredBox(
       color: AppColors.bgDefault,
-      child: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            _Header(
-              name: user?.name,
-              avatarUrl: user?.profilePictureUrl,
-            ),
-            Padding(
-              padding: EdgeInsets.fromLTRB(
-                AppSpacing.s4,
-                AppSpacing.s4,
-                AppSpacing.s4,
-                bottomClear,
+      child: RefreshIndicator(
+        color: AppColors.brand,
+        onRefresh: () async {
+          ref
+            ..invalidate(runningAuditsProvider)
+            ..invalidate(upcomingAuditsProvider);
+          try {
+            await Future.wait([
+              ref.read(runningAuditsProvider.future),
+              ref.read(upcomingAuditsProvider.future),
+            ]);
+          } on Object {
+            // Errors surface in each section's error state; the pull just ends.
+          }
+        },
+        child: SingleChildScrollView(
+          // Clamp on both platforms so iOS doesn't bounce/over-scroll the
+          // content after a pull-to-refresh (Android already clamps).
+          physics: const AlwaysScrollableScrollPhysics(
+            parent: ClampingScrollPhysics(),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _Header(
+                name: user?.name,
+                avatarUrl: user?.profilePictureUrl,
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Text('Upcoming audits', style: AppText.headingL),
-                  const SizedBox(height: AppSpacing.s5),
-                  const _UpcomingSection(),
-                ],
+              Padding(
+                padding: EdgeInsets.fromLTRB(
+                  AppSpacing.s4,
+                  AppSpacing.s4,
+                  AppSpacing.s4,
+                  bottomClear,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Text('Upcoming audits', style: AppText.headingL),
+                    const SizedBox(height: AppSpacing.s5),
+                    const _UpcomingSection(),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -89,7 +112,9 @@ class _Header extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s3),
             child: Text(
               'Welcome back!',
-              style: AppText.bodyLMedium.copyWith(color: AppColors.textSubtlest),
+              style: AppText.bodyLMedium.copyWith(
+                color: AppColors.textSubtlest,
+              ),
             ),
           ),
           const SizedBox(height: AppSpacing.s1),
@@ -111,28 +136,26 @@ class _RunningSection extends ConsumerWidget {
     final async = ref.watch(runningAuditsProvider);
 
     Widget frame(String title, Widget child) => Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s3),
-              child: Text(
-                title,
-                style: AppText.headingL.copyWith(color: AppColors.textInverse),
-              ),
-            ),
-            const SizedBox(height: AppSpacing.s6),
-            child,
-          ],
-        );
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s3),
+          child: Text(
+            title,
+            style: AppText.headingL.copyWith(color: AppColors.textInverse),
+          ),
+        ),
+        const SizedBox(height: AppSpacing.s6),
+        child,
+      ],
+    );
 
     return async.when(
       loading: () => frame(
         'Currently running audits',
-        const SizedBox(
-          height: 120,
-          child: Center(
-            child: CircularProgressIndicator(color: AppColors.textInverse),
-          ),
+        const Padding(
+          padding: EdgeInsets.symmetric(horizontal: AppSpacing.s2),
+          child: AuditCardSkeleton(),
         ),
       ),
       error: (_, _) => frame(
@@ -260,7 +283,9 @@ class _IdentityRow extends StatelessWidget {
                 name ?? 'Auditor',
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: AppText.bodyLMedium.copyWith(color: AppColors.textInverse),
+                style: AppText.bodyLMedium.copyWith(
+                  color: AppColors.textInverse,
+                ),
               ),
               GestureDetector(
                 onTap: () => context.go('/profile'),
@@ -380,9 +405,12 @@ class _UpcomingSectionState extends ConsumerState<_UpcomingSection> {
           const SizedBox(height: AppSpacing.s4),
         ],
         async.when(
-          loading: () => const Padding(
-            padding: EdgeInsets.symmetric(vertical: AppSpacing.s8),
-            child: Center(child: CircularProgressIndicator()),
+          loading: () => const Column(
+            children: [
+              AuditCardSkeleton(),
+              SizedBox(height: AppSpacing.s4),
+              AuditCardSkeleton(),
+            ],
           ),
           error: (_, _) => Padding(
             padding: const EdgeInsets.symmetric(vertical: AppSpacing.s7),
@@ -400,8 +428,9 @@ class _UpcomingSectionState extends ConsumerState<_UpcomingSection> {
                   child: Text(
                     'No audits match "$query".',
                     textAlign: TextAlign.center,
-                    style: AppText.bodyMRegular
-                        .copyWith(color: AppColors.textSubtle),
+                    style: AppText.bodyMRegular.copyWith(
+                      color: AppColors.textSubtle,
+                    ),
                   ),
                 );
               }
@@ -446,8 +475,7 @@ class _SearchField extends StatelessWidget {
       style: AppText.bodyLRegular,
       decoration: InputDecoration(
         hintText: 'Search audits',
-        hintStyle:
-            AppText.bodyLRegular.copyWith(color: AppColors.textSubtlest),
+        hintStyle: AppText.bodyLRegular.copyWith(color: AppColors.textSubtlest),
         prefixIcon: const Icon(Icons.search, color: AppColors.iconSubtle),
         filled: true,
         fillColor: AppColors.bgDefault,
