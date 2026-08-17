@@ -19,8 +19,7 @@ class HomeScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final user = ref.watch(currentUserProvider);
 
-    final bottomClear =
-        MediaQuery.of(context).viewPadding.bottom + AppSpacing.s9 + 56;
+    final bottomClear = MediaQuery.of(context).viewPadding.bottom + AppSpacing.s9 + 56;
 
     return ColoredBox(
       color: AppColors.bgDefault,
@@ -34,9 +33,9 @@ class HomeScreen extends ConsumerWidget {
             ),
             Padding(
               padding: EdgeInsets.fromLTRB(
-                AppSpacing.s6,
-                AppSpacing.s7,
-                AppSpacing.s6,
+                AppSpacing.s4,
+                AppSpacing.s4,
+                AppSpacing.s4,
                 bottomClear,
               ),
               child: Column(
