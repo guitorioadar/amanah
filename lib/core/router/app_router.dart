@@ -6,6 +6,7 @@ import 'package:amanah/features/auth/presentation/screens/sign_in_screen.dart';
 import 'package:amanah/features/auth/presentation/screens/signing_out_screen.dart';
 import 'package:amanah/features/home/presentation/screens/home_screen.dart';
 import 'package:amanah/features/profile/presentation/screens/profile_screen.dart';
+import 'package:amanah/features/shell/presentation/branch_container.dart';
 import 'package:amanah/features/shell/presentation/shell_screen.dart';
 import 'package:amanah/features/splash/presentation/splash_screen.dart';
 import 'package:flutter/widgets.dart';
@@ -63,9 +64,15 @@ GoRouter buildRouter() {
         path: '/password-updated',
         builder: (context, state) => const PasswordUpdatedScreen(),
       ),
-      StatefulShellRoute.indexedStack(
+      StatefulShellRoute(
         builder: (context, state, navigationShell) =>
             ShellScreen(navigationShell: navigationShell),
+        // Cross-fade between tabs instead of the default instant swap.
+        navigatorContainerBuilder: (context, navigationShell, children) =>
+            BranchContainer(
+          currentIndex: navigationShell.currentIndex,
+          children: children,
+        ),
         branches: [
           StatefulShellBranch(
             routes: [

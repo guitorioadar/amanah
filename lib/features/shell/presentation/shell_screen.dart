@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 /// Bottom-nav scaffold hosting the four primary tabs, with the global
 /// "+ Expense" FAB. Uses [StatefulNavigationShell] so each tab keeps its own
 /// navigation stack and scroll/search state (required by the designs).
+/// Tab-switch cross-fade is handled by BranchContainer in the router.
 class ShellScreen extends StatelessWidget {
   const ShellScreen({required this.navigationShell, super.key});
 
