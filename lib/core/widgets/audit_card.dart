@@ -282,12 +282,18 @@ class _StatusChip extends StatelessWidget {
       AuditSection.upcoming => AppColors.textWarning,
       AuditSection.completed => AppColors.textSuccess,
     };
+    final bg = switch (section) {
+      AuditSection.running => AppColors.bgChipInProgress,
+      AuditSection.upcoming => AppColors.bgChipUpcoming,
+      AuditSection.completed => AppColors.bgChipCompleted,
+    };
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.s3,
         vertical: 3,
       ),
       decoration: BoxDecoration(
+        color: bg,
         borderRadius: BorderRadius.circular(AppRadius.sm),
         border: Border.all(color: color),
       ),

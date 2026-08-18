@@ -44,6 +44,10 @@ abstract final class AppColors {
   static const Color bgSolid = AppPalette.neutral12; // navy header
   static const Color bgBrandBold = AppPalette.brand;
 
+  static const Color bgChipInProgress = AppPalette.blue3;
+  static const Color bgChipUpcoming = AppPalette.orange3;
+  static const Color bgChipCompleted = AppPalette.green3;
+
   // Status subtle tints.
   static const Color bgDanger = AppPalette.red3;
   static const Color bgWarning = AppPalette.orange3;

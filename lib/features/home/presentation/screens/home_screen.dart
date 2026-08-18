@@ -4,6 +4,7 @@ import 'package:amanah/core/theme/app_colors.dart';
 import 'package:amanah/core/theme/app_spacing.dart';
 import 'package:amanah/core/theme/app_system_ui.dart';
 import 'package:amanah/core/theme/app_text_styles.dart';
+import 'package:amanah/core/widgets/app_search_field.dart';
 import 'package:amanah/core/widgets/audit_card.dart';
 import 'package:amanah/core/widgets/empty_state.dart';
 import 'package:amanah/core/widgets/identity_bar.dart';
@@ -322,7 +323,7 @@ class _UpcomingSectionState extends ConsumerState<_UpcomingSection> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         if (showSearch) ...[
-          _SearchField(controller: _controller, onChanged: _onChanged),
+          AppSearchField(controller: _controller, onChanged: _onChanged),
           const SizedBox(height: AppSpacing.s4),
         ],
         async.when(
@@ -378,42 +379,6 @@ class _UpcomingSectionState extends ConsumerState<_UpcomingSection> {
           },
         ),
       ],
-    );
-  }
-}
-
-/// Rounded search box for the upcoming list. Server-side keyword search.
-class _SearchField extends StatelessWidget {
-  const _SearchField({required this.controller, required this.onChanged});
-  final TextEditingController controller;
-  final ValueChanged<String> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    return TextField(
-      controller: controller,
-      onChanged: onChanged,
-      style: AppText.bodyLRegular,
-      decoration: InputDecoration(
-        hintText: 'Search audits',
-        hintStyle: AppText.bodyLRegular.copyWith(color: AppColors.textSubtlest),
-        prefixIcon: const Icon(Icons.search, color: AppColors.iconSubtle),
-        filled: true,
-        fillColor: AppColors.bgDefault,
-        contentPadding: const EdgeInsets.symmetric(vertical: AppSpacing.s3),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppRadius.md),
-          borderSide: BorderSide(color: AppColors.borderDefault),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppRadius.md),
-          borderSide: BorderSide(color: AppColors.borderDefault),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppRadius.md),
-          borderSide: const BorderSide(color: AppColors.borderFocus),
-        ),
-      ),
     );
   }
 }
