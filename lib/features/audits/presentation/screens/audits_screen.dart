@@ -135,7 +135,7 @@ class _AuditsBodyState extends ConsumerState<_AuditsBody> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const SizedBox(height: AppSpacing.s5),
+          const SizedBox(height: AppSpacing.s4),
           AppTabs(
             labels: [for (final t in _tabs) t.label],
             selected: _index,
