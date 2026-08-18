@@ -4,9 +4,9 @@ import 'package:amanah/core/theme/app_colors.dart';
 import 'package:amanah/core/theme/app_spacing.dart';
 import 'package:amanah/core/theme/app_system_ui.dart';
 import 'package:amanah/core/theme/app_text_styles.dart';
-import 'package:amanah/core/widgets/app_avatar.dart';
 import 'package:amanah/core/widgets/audit_card.dart';
 import 'package:amanah/core/widgets/empty_state.dart';
+import 'package:amanah/core/widgets/identity_bar.dart';
 import 'package:amanah/core/widgets/skeletons/audit_card_skeleton.dart';
 import 'package:amanah/features/audits/data/models/audit.dart';
 import 'package:amanah/features/audits/presentation/providers/audit_providers.dart';
@@ -14,8 +14,6 @@ import 'package:amanah/features/auth/presentation/providers/session_providers.da
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:go_router/go_router.dart';
 
 /// Home tab — navy header (identity + running audits) over a white body
 /// (upcoming audits + search). Audit data lands with the audit model/API;
@@ -127,7 +125,7 @@ class _Header extends StatelessWidget {
         children: [
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s3),
-            child: _IdentityRow(name: name, avatarUrl: avatarUrl),
+            child: IdentityBar(name: name, avatarUrl: avatarUrl),
           ),
           const SizedBox(height: AppSpacing.s6),
           Padding(
@@ -281,105 +279,6 @@ class _RunningCarouselState extends State<_RunningCarousel> {
           ),
         ],
       ],
-    );
-  }
-}
-
-class _IdentityRow extends StatelessWidget {
-  const _IdentityRow({required this.name, required this.avatarUrl});
-
-  final String? name;
-  final String? avatarUrl;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        AppAvatar(url: avatarUrl, size: 40),
-        const SizedBox(width: AppSpacing.s3),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                name ?? 'Auditor',
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: AppText.bodyLMedium.copyWith(
-                  color: AppColors.textInverse,
-                ),
-              ),
-              GestureDetector(
-                onTap: () => context.go('/profile'),
-                child: Text(
-                  'View profile',
-                  style: AppText.bodySMedium.copyWith(
-                    color: AppColors.textSubtlest,
-                    decoration: TextDecoration.underline,
-                    decorationColor: AppColors.textSubtlest,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(width: AppSpacing.s3),
-        const _BellButton(),
-      ],
-    );
-  }
-}
-
-/// Notification bell with an unread badge. Tap wiring lands with the
-/// Notifications screen (M3).
-class _BellButton extends StatelessWidget {
-  const _BellButton();
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {}, // TODO(M3): context.push('/notifications')
-      behavior: HitTestBehavior.opaque,
-      child: SizedBox(
-        width: 36,
-        height: 36,
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            Container(
-              width: 32,
-              height: 32,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: AppColors.textInverse.withValues(alpha: 0.15),
-              ),
-              child: Center(
-                child: SvgPicture.asset(
-                  'assets/icons/line/Bell.svg',
-                  width: 20,
-                  colorFilter: const ColorFilter.mode(
-                    AppColors.iconInverse,
-                    BlendMode.srcIn,
-                  ),
-                ),
-              ),
-            ),
-            Positioned(
-              top: 0,
-              right: 4,
-              child: Container(
-                width: 10,
-                height: 10,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: AppColors.iconNotification,
-                  border: Border.all(color: AppColors.bgSolid, width: 2),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

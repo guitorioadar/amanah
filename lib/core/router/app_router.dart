@@ -1,3 +1,4 @@
+import 'package:amanah/features/audits/presentation/screens/audits_screen.dart';
 import 'package:amanah/features/auth/presentation/screens/forgot_password_screen.dart';
 import 'package:amanah/features/auth/presentation/screens/otp_verification_screen.dart';
 import 'package:amanah/features/auth/presentation/screens/password_updated_screen.dart';
@@ -82,7 +83,14 @@ GoRouter buildRouter() {
               ),
             ],
           ),
-          _branch('/audits', 'Audits'),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/audits',
+                builder: (context, state) => const AuditsScreen(),
+              ),
+            ],
+          ),
           _branch('/expenses', 'Expenses'),
           StatefulShellBranch(
             routes: [
