@@ -1,6 +1,7 @@
 import 'package:amanah/core/providers.dart';
 import 'package:amanah/features/audits/data/audit_repository.dart';
 import 'package:amanah/features/audits/data/models/audit.dart';
+import 'package:amanah/features/audits/data/models/audit_detail.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// Audit backend is live, so the app talks to the real repository.
@@ -95,4 +96,13 @@ final auditsTabProvider =
         repo.myAudits(section: AuditSection.completed, keyword: keyword),
       ]).then((lists) => [for (final list in lists) ...list]);
   }
+});
+
+// ── Audit details ──────────────────────────────────────────────────────────
+
+/// Full audit for the details screen, keyed by audit id.
+// ignore: specify_nonobvious_property_types
+final auditDetailProvider =
+    FutureProvider.autoDispose.family<AuditDetail, int>((ref, id) {
+  return ref.watch(auditRepositoryProvider).auditDetail(id);
 });

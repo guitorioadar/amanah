@@ -1,16 +1,35 @@
 import 'package:amanah/core/network/api_exception.dart';
 import 'package:amanah/features/audits/data/models/audit.dart';
+import 'package:amanah/features/audits/data/models/audit_detail.dart';
 import 'package:dio/dio.dart';
 
 /// Reads the signed-in auditor's audits from `GET /my-audits`, grouped by
 /// [AuditSection]. `keyword` maps to the endpoint's server-side search
 /// (audit no / title / type / location / client).
-// ignore: one_member_abstracts
 abstract interface class AuditRepository {
   Future<List<Audit>> myAudits({
     required AuditSection section,
     String? keyword,
   });
+
+  /// Full audit for the details screen — `GET /my-audits/{id}`.
+  Future<AuditDetail> auditDetail(int id);
+
+  /// Create/update an observation submission — `POST
+  /// /my-audits/{eventId}/observations/{auditObservationId}/submit`.
+  /// [newFilePaths] are local files to upload; [deleteFileIds] are existing
+  /// file ids to remove. Returns the updated observation.
+  Future<AuditObservation> submitObservation({
+    required int eventId,
+    required int auditObservationId,
+    required Finding finding,
+    String? note,
+    List<String> newFilePaths,
+    List<int> deleteFileIds,
+  });
+
+  /// Finalize the audit — `POST /my-audits/{eventId}/complete`.
+  Future<void> completeAudit(int eventId);
 }
 
 /// Real implementation — talks to the backend over Dio.
@@ -42,6 +61,56 @@ class AuditRepositoryImpl implements AuditRepository {
       throw ApiException.fromDio(e);
     }
   }
+
+  @override
+  Future<AuditDetail> auditDetail(int id) async {
+    try {
+      final res = await _dio.get<Map<String, dynamic>>('/my-audits/$id');
+      return AuditDetail.fromJson(res.data!['data'] as Map<String, dynamic>);
+    } on DioException catch (e) {
+      throw ApiException.fromDio(e);
+    }
+  }
+
+  @override
+  Future<AuditObservation> submitObservation({
+    required int eventId,
+    required int auditObservationId,
+    required Finding finding,
+    String? note,
+    List<String> newFilePaths = const [],
+    List<int> deleteFileIds = const [],
+  }) async {
+    try {
+      final form = FormData();
+      form.fields.add(MapEntry('finding', finding.api));
+      if (note != null) form.fields.add(MapEntry('note', note));
+      for (final id in deleteFileIds) {
+        form.fields.add(MapEntry('delete_file_ids[]', '$id'));
+      }
+      for (final path in newFilePaths) {
+        form.files.add(
+          MapEntry('files[]', await MultipartFile.fromFile(path)),
+        );
+      }
+      final res = await _dio.post<Map<String, dynamic>>(
+        '/my-audits/$eventId/observations/$auditObservationId/submit',
+        data: form,
+      );
+      return AuditObservation.fromJson(res.data!['data'] as Map<String, dynamic>);
+    } on DioException catch (e) {
+      throw ApiException.fromDio(e);
+    }
+  }
+
+  @override
+  Future<void> completeAudit(int eventId) async {
+    try {
+      await _dio.post<Map<String, dynamic>>('/my-audits/$eventId/complete');
+    } on DioException catch (e) {
+      throw ApiException.fromDio(e);
+    }
+  }
 }
 
 /// Mock implementation — dummy data, no backend. For tests / offline demo.
@@ -65,6 +134,73 @@ class MockAuditRepository implements AuditRepository {
             (a.client?.name.toLowerCase().contains(q) ?? false))
         .toList();
   }
+
+  @override
+  Future<AuditDetail> auditDetail(int id) async {
+    await _latency();
+    final base = _seed.firstWhere(
+      (a) => a.id == id,
+      orElse: () => _seed.first,
+    );
+    return AuditDetail(
+      id: base.id,
+      title: base.title,
+      status: base.section.name,
+      auditType: base.auditType,
+      categoryName: base.categoryName,
+      client: base.client,
+      location: base.location,
+      eventDate: base.eventDate,
+      startTime: '09:00:00',
+      endTime: '10:00:00',
+      observationsTotal: base.observationsTotal,
+      observationsCompleted: base.observationsCompleted,
+      progressPercent: base.progressPercent,
+      permissions: const AuditPermissions(canComplete: true, canSubmit: true),
+      auditCategories: const [
+        AuditCategory(
+          auditCategoryId: 1,
+          title: 'Verification',
+          observationsTotal: 3,
+          observations: [
+            AuditObservation(auditObservationId: 1, name: 'Halal Process'),
+            AuditObservation(
+              auditObservationId: 2,
+              name: 'Maintenance Process',
+            ),
+            AuditObservation(
+              auditObservationId: 3,
+              name: 'Production Process',
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  @override
+  Future<AuditObservation> submitObservation({
+    required int eventId,
+    required int auditObservationId,
+    required Finding finding,
+    String? note,
+    List<String> newFilePaths = const [],
+    List<int> deleteFileIds = const [],
+  }) async {
+    await _latency();
+    return AuditObservation(
+      auditObservationId: auditObservationId,
+      name: 'Observation $auditObservationId',
+      resultId: auditObservationId,
+      isDraft: true,
+      finding: finding.api,
+      note: note,
+      hasNote: note != null && note.isNotEmpty,
+    );
+  }
+
+  @override
+  Future<void> completeAudit(int eventId) => _latency();
 
   static final _seed = <Audit>[
     Audit(

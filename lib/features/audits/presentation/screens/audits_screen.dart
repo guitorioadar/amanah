@@ -15,6 +15,7 @@ import 'package:amanah/features/auth/presentation/providers/session_providers.da
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 /// Audits tab — navy header over a white body with a segmented control
 /// (Assigned / In progress / Completed), a shared search box, and the matching
@@ -237,7 +238,7 @@ class _TabList extends ConsumerWidget {
             separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.s4),
             itemBuilder: (context, i) => AuditCard(
               audit: audits[i],
-              onTap: () {}, // TODO(M4): open audit details
+              onTap: () => context.push('/audit/${audits[i].id}'),
             ),
           );
         },

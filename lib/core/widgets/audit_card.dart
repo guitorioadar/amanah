@@ -1,8 +1,8 @@
-import 'dart:math' as math;
-
 import 'package:amanah/core/theme/app_colors.dart';
 import 'package:amanah/core/theme/app_spacing.dart';
 import 'package:amanah/core/theme/app_text_styles.dart';
+import 'package:amanah/core/widgets/audit_chips.dart';
+import 'package:amanah/core/widgets/progress_ring.dart';
 import 'package:amanah/features/audits/data/models/audit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -71,14 +71,14 @@ class _Body extends StatelessWidget {
           scrollDirection: Axis.horizontal,
           child: Row(
             children: [
-              _StatusChip(audit.section),
+              AuditStatusChip(audit.section),
               if (audit.categoryName != null) ...[
                 const SizedBox(width: AppSpacing.s2),
-                _TagChip(audit.categoryName!),
+                AuditTagChip(audit.categoryName!),
               ],
               if (audit.auditType != null) ...[
                 const SizedBox(width: AppSpacing.s2),
-                _TagChip(audit.auditType!),
+                AuditTagChip(audit.auditType!),
               ],
             ],
           ),
@@ -155,7 +155,7 @@ class _Footer extends StatelessWidget {
 
     return Row(
       children: [
-        _ProgressRing(
+        ProgressRing(
           percent: audit.progressPercent,
           color: isCompleted ? AppColors.iconSuccess : AppColors.iconAmber,
         ),
@@ -205,127 +205,6 @@ class _Footer extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-}
-
-/// Filled circular progress ring (donut). Empty track when [percent] is 0.
-class _ProgressRing extends StatelessWidget {
-  const _ProgressRing({required this.percent, required this.color});
-  final int percent;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    return CustomPaint(
-      size: const Size(20, 20),
-      painter: _RingPainter(
-        fraction: (percent.clamp(0, 100)) / 100,
-        color: color,
-        track: AppColors.borderBold,
-      ),
-    );
-  }
-}
-
-class _RingPainter extends CustomPainter {
-  _RingPainter({
-    required this.fraction,
-    required this.color,
-    required this.track,
-  });
-  final double fraction;
-  final Color color;
-  final Color track;
-
-  static const _stroke = 4.0;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final center = size.center(Offset.zero);
-    final radius = (size.width - _stroke) / 2;
-    final trackPaint = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = _stroke
-      ..color = track;
-    canvas.drawCircle(center, radius, trackPaint);
-
-    if (fraction <= 0) return;
-    final arcPaint = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.round
-      ..strokeWidth = _stroke
-      ..color = color;
-    canvas.drawArc(
-      Rect.fromCircle(center: center, radius: radius),
-      -math.pi / 2,
-      2 * math.pi * fraction,
-      false,
-      arcPaint,
-    );
-  }
-
-  @override
-  bool shouldRepaint(_RingPainter old) =>
-      old.fraction != fraction || old.color != color || old.track != track;
-}
-
-/// Status chip — outlined pill, colored by section.
-class _StatusChip extends StatelessWidget {
-  const _StatusChip(this.section);
-  final AuditSection section;
-
-  @override
-  Widget build(BuildContext context) {
-    final color = switch (section) {
-      AuditSection.running => AppColors.brand,
-      AuditSection.upcoming => AppColors.textWarning,
-      AuditSection.completed => AppColors.textSuccess,
-    };
-    final bg = switch (section) {
-      AuditSection.running => AppColors.bgChipInProgress,
-      AuditSection.upcoming => AppColors.bgChipUpcoming,
-      AuditSection.completed => AppColors.bgChipCompleted,
-    };
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.s3,
-        vertical: 3,
-      ),
-      decoration: BoxDecoration(
-        color: bg,
-        borderRadius: BorderRadius.circular(AppRadius.sm),
-        border: Border.all(color: color),
-      ),
-      child: Text(
-        section.chipLabel,
-        style: AppText.buttonS.copyWith(color: color),
-      ),
-    );
-  }
-}
-
-/// Neutral gray tag chip (category / audit type).
-class _TagChip extends StatelessWidget {
-  const _TagChip(this.label);
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.s3,
-        vertical: 3,
-      ),
-      decoration: BoxDecoration(
-        color: AppColors.bgPressed,
-        borderRadius: BorderRadius.circular(AppRadius.sm),
-        border: Border.all(color: AppColors.borderDefault),
-      ),
-      child: Text(
-        label,
-        style: AppText.buttonS.copyWith(color: AppColors.textDefault),
-      ),
     );
   }
 }

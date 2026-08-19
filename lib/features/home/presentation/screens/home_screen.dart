@@ -15,6 +15,7 @@ import 'package:amanah/features/auth/presentation/providers/session_providers.da
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 /// Home tab — navy header (identity + running audits) over a white body
 /// (upcoming audits + search). Audit data lands with the audit model/API;
@@ -252,7 +253,7 @@ class _RunningCarouselState extends State<_RunningCarousel> {
                 padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s2),
                 child: AuditCard(
                   audit: audits[i],
-                  onTap: () {}, // TODO(M4): open audit details
+                  onTap: () => context.push('/audit/${audits[i].id}'),
                 ),
               ),
             ),
@@ -371,7 +372,7 @@ class _UpcomingSectionState extends ConsumerState<_UpcomingSection> {
                   if (i > 0) const SizedBox(height: AppSpacing.s4),
                   AuditCard(
                     audit: audits[i],
-                    onTap: () {}, // TODO(M4): open audit details
+                    onTap: () => context.push('/audit/${audits[i].id}'),
                   ),
                 ],
               ],

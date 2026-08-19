@@ -14,6 +14,14 @@ enum AuditSection {
   /// Query value for `?section=`.
   String get query => name;
 
+  /// Maps the detail payload's `status` string to a section. Falls back to
+  /// [running] for an unknown/absent value.
+  static AuditSection fromStatus(String? status) => switch (status) {
+        'upcoming' => upcoming,
+        'completed' => completed,
+        _ => running,
+      };
+
   /// Chip label shown on the card.
   String get chipLabel => switch (this) {
         AuditSection.running => 'In progress',

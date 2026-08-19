@@ -1,4 +1,6 @@
+import 'package:amanah/features/audits/presentation/screens/audit_details_screen.dart';
 import 'package:amanah/features/audits/presentation/screens/audits_screen.dart';
+import 'package:amanah/features/audits/presentation/screens/observation_list_screen.dart';
 import 'package:amanah/features/auth/presentation/screens/forgot_password_screen.dart';
 import 'package:amanah/features/auth/presentation/screens/otp_verification_screen.dart';
 import 'package:amanah/features/auth/presentation/screens/password_updated_screen.dart';
@@ -64,6 +66,22 @@ GoRouter buildRouter() {
       GoRoute(
         path: '/password-updated',
         builder: (context, state) => const PasswordUpdatedScreen(),
+      ),
+      // Full-screen over the shell (own back button, no bottom nav).
+      GoRoute(
+        path: '/audit/:id',
+        builder: (context, state) => AuditDetailsScreen(
+          auditId: int.parse(state.pathParameters['id']!),
+        ),
+        routes: [
+          GoRoute(
+            path: 'category/:cid',
+            builder: (context, state) => ObservationListScreen(
+              auditId: int.parse(state.pathParameters['id']!),
+              categoryId: int.parse(state.pathParameters['cid']!),
+            ),
+          ),
+        ],
       ),
       StatefulShellRoute(
         builder: (context, state, navigationShell) =>

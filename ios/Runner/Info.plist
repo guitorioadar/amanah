@@ -16,6 +16,10 @@
 	<string>6.0</string>
 	<key>CFBundleName</key>
 	<string>amanah</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Attach photos and videos as evidence to an audit observation.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Capture photos and videos as evidence for an audit observation.</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
