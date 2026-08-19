@@ -11,6 +11,7 @@ class AppButton extends StatelessWidget {
     required this.label,
     required this.onPressed,
     this.loading = false,
+    this.outlined = false,
     this.height = 44,
     super.key,
   });
@@ -20,12 +21,15 @@ class AppButton extends StatelessWidget {
   /// Null disables the button (renders the white/outlined state).
   final VoidCallback? onPressed;
   final bool loading;
+
+  /// White/outlined even when enabled (e.g. "Submit again").
+  final bool outlined;
   final double height;
 
   @override
   Widget build(BuildContext context) {
     final enabled = onPressed != null && !loading;
-    final filled = enabled || loading;
+    final filled = !outlined && (enabled || loading);
 
     return SizedBox(
       height: height,

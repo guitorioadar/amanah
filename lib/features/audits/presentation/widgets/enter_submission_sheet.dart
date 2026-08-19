@@ -13,7 +13,13 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:intl/intl.dart';
 import 'package:toastification/toastification.dart';
+import 'package:url_launcher/url_launcher.dart';
+
+/// Submission sheet mode: read-only [view] (already submitted) vs editable
+/// [edit] (create, or after "Submit again").
+enum _Mode { view, edit }
 
 /// Max files (photos + videos + documents together) per observation.
 const _maxFiles = 10;
@@ -66,13 +72,25 @@ class _EnterSubmissionSheet extends ConsumerStatefulWidget {
 class _EnterSubmissionSheetState extends ConsumerState<_EnterSubmissionSheet> {
   late Finding? _finding =
       widget.initialFinding ?? widget.observation.findingValue;
-  late final _noteController =
-      TextEditingController(text: widget.observation.note ?? '');
+  late final _noteController = TextEditingController(
+    text: widget.observation.note ?? '',
+  );
 
   late final List<AuditFile> _existing = [...widget.observation.files];
   final List<int> _deleteIds = [];
   final List<_Picked> _newFiles = [];
   bool _saving = false;
+
+  // Already-submitted observations open read-only; "Submit again" → edit.
+  late _Mode _mode = widget.observation.isSubmitted ? _Mode.view : _Mode.edit;
+
+  static final _dateFmt = DateFormat('MMM d, yyyy h:mm a');
+
+  Future<void> _open(String url) async {
+    final uri = Uri.tryParse(url);
+    if (uri == null) return;
+    await launchUrl(uri, mode: LaunchMode.externalApplication);
+  }
 
   int get _totalFiles => _existing.length + _newFiles.length;
 
@@ -140,7 +158,9 @@ class _EnterSubmissionSheetState extends ConsumerState<_EnterSubmissionSheet> {
     }
     setState(() => _saving = true);
     try {
-      await ref.read(auditRepositoryProvider).submitObservation(
+      await ref
+          .read(auditRepositoryProvider)
+          .submitObservation(
             eventId: widget.eventId,
             auditObservationId: widget.observation.auditObservationId,
             finding: finding,
@@ -173,22 +193,7 @@ class _EnterSubmissionSheetState extends ConsumerState<_EnterSubmissionSheet> {
   @override
   Widget build(BuildContext context) {
     final keyboard = MediaQuery.of(context).viewInsets.bottom;
-    final media = <Widget>[
-      for (final f in _existing)
-        if (f.isPhoto || f.isVideo)
-          _MediaThumb.existing(f, onRemove: () => _removeExisting(f)),
-      for (final f in _newFiles)
-        if (f.kind != _Kind.document)
-          _MediaThumb.picked(f, onRemove: () => _removeNew(f)),
-    ];
-    final docs = <Widget>[
-      for (final f in _existing)
-        if (f.isDocument)
-          _DocRow(name: f.name, onRemove: () => _removeExisting(f)),
-      for (final f in _newFiles)
-        if (f.kind == _Kind.document)
-          _DocRow(name: f.name, onRemove: () => _removeNew(f)),
-    ];
+    final isView = _mode == _Mode.view;
 
     return Padding(
       padding: EdgeInsets.only(bottom: keyboard),
@@ -207,105 +212,7 @@ class _EnterSubmissionSheetState extends ConsumerState<_EnterSubmissionSheet> {
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(widget.observation.name, style: AppText.headingM),
-                    const SizedBox(height: AppSpacing.s5),
-                    const _Label('Finding'),
-                    const SizedBox(height: AppSpacing.s2),
-                    FindingSelector(
-                      selected: _finding,
-                      onChanged: (f) => setState(() => _finding = f),
-                    ),
-                    const SizedBox(height: AppSpacing.s5),
-                    const _Label('Add record'),
-                    const SizedBox(height: AppSpacing.s3),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _AddTile(
-                            icon: 'FileArrowUp',
-                            label: 'Add document',
-                            onTap: () => _pick(
-                              FileType.custom,
-                              _Kind.document,
-                              const [
-                                'pdf', 'doc', 'docx', 'xls', 'xlsx',
-                                'csv', 'txt', 'ppt', 'pptx',
-                              ],
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: AppSpacing.s2),
-                        Expanded(
-                          child: _AddTile(
-                            icon: 'ImageSquare',
-                            label: 'Add photo',
-                            onTap: () =>
-                                _pick(FileType.image, _Kind.photo, null),
-                          ),
-                        ),
-                        const SizedBox(width: AppSpacing.s2),
-                        Expanded(
-                          child: _AddTile(
-                            icon: 'VideoCamera',
-                            label: 'Add video',
-                            onTap: () =>
-                                _pick(FileType.video, _Kind.video, null),
-                          ),
-                        ),
-                      ],
-                    ),
-                    if (media.isNotEmpty) ...[
-                      const SizedBox(height: AppSpacing.s4),
-                      SizedBox(
-                        height: 88,
-                        child: ListView.separated(
-                          scrollDirection: Axis.horizontal,
-                          itemCount: media.length,
-                          separatorBuilder: (_, _) =>
-                              const SizedBox(width: AppSpacing.s2),
-                          itemBuilder: (_, i) => media[i],
-                        ),
-                      ),
-                    ],
-                    if (docs.isNotEmpty) ...[
-                      const SizedBox(height: AppSpacing.s3),
-                      for (final row in docs) ...[
-                        row,
-                        const SizedBox(height: AppSpacing.s2),
-                      ],
-                    ],
-                    const SizedBox(height: AppSpacing.s5),
-                    const _Label('Note'),
-                    const SizedBox(height: AppSpacing.s2),
-                    TextField(
-                      controller: _noteController,
-                      minLines: 3,
-                      maxLines: 6,
-                      style: AppText.bodyLRegular,
-                      decoration: InputDecoration(
-                        hintText: 'Add note here',
-                        hintStyle: AppText.bodyLRegular
-                            .copyWith(color: AppColors.textSubtlest),
-                        filled: true,
-                        fillColor: AppColors.bgDefault,
-                        contentPadding: const EdgeInsets.all(AppSpacing.s3),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(AppRadius.md),
-                          borderSide: BorderSide(color: AppColors.borderDefault),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(AppRadius.md),
-                          borderSide: BorderSide(color: AppColors.borderDefault),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(AppRadius.md),
-                          borderSide:
-                              const BorderSide(color: AppColors.borderFocus),
-                        ),
-                      ),
-                    ),
-                  ],
+                  children: isView ? _viewChildren() : _editChildren(),
                 ),
               ),
             ),
@@ -316,16 +223,227 @@ class _EnterSubmissionSheetState extends ConsumerState<_EnterSubmissionSheet> {
                 AppSpacing.s4,
                 AppSpacing.s6,
               ),
-              child: AppButton(
-                // "Submit again" when a result already exists, else "Save".
-                label: widget.observation.isSubmitted ? 'Submit again' : 'Save',
-                loading: _saving,
-                // Blue only when something changed; white/disabled otherwise.
-                onPressed: _dirty ? _save : null,
-              ),
+              child: isView
+                  // View mode: "Submit again" activates the editable form.
+                  ? AppButton(
+                      label: 'Submit again',
+                      outlined: true,
+                      onPressed: () => setState(() => _mode = _Mode.edit),
+                    )
+                  // Edit mode: blue only when something changed.
+                  : AppButton(
+                      label: 'Save',
+                      loading: _saving,
+                      onPressed: _dirty ? _save : null,
+                    ),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  /// Editable form: finding selector, add-record tiles, removable attachments,
+  /// note field.
+  List<Widget> _editChildren() {
+    final media = <Widget>[
+      for (final f in _existing)
+        if (f.isPhoto || f.isVideo)
+          _MediaThumb.existing(f, onRemove: () => _removeExisting(f)),
+      for (final f in _newFiles)
+        if (f.kind != _Kind.document)
+          _MediaThumb.picked(f, onRemove: () => _removeNew(f)),
+    ];
+    final docs = <Widget>[
+      for (final f in _existing)
+        if (f.isDocument)
+          _DocRow(name: f.name, onAction: () => _removeExisting(f)),
+      for (final f in _newFiles)
+        if (f.kind == _Kind.document)
+          _DocRow(name: f.name, onAction: () => _removeNew(f)),
+    ];
+
+    return [
+      Text(widget.observation.name, style: AppText.headingM),
+      const SizedBox(height: AppSpacing.s5),
+      const _Label('Finding'),
+      const SizedBox(height: AppSpacing.s2),
+      FindingSelector(
+        selected: _finding,
+        onChanged: (f) => setState(() => _finding = f),
+      ),
+      const SizedBox(height: AppSpacing.s5),
+      const _Label('Add record'),
+      const SizedBox(height: AppSpacing.s3),
+      Row(
+        children: [
+          Expanded(
+            child: _AddTile(
+              icon: 'FileArrowUp',
+              label: 'Add document',
+              onTap: () => _pick(
+                FileType.custom,
+                _Kind.document,
+                const [
+                  'pdf',
+                  'doc',
+                  'docx',
+                  'xls',
+                  'xlsx',
+                  'csv',
+                  'txt',
+                  'ppt',
+                  'pptx',
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(width: AppSpacing.s2),
+          Expanded(
+            child: _AddTile(
+              icon: 'ImageSquare',
+              label: 'Add photo',
+              onTap: () => _pick(FileType.image, _Kind.photo, null),
+            ),
+          ),
+          const SizedBox(width: AppSpacing.s2),
+          Expanded(
+            child: _AddTile(
+              icon: 'VideoCamera',
+              label: 'Add video',
+              onTap: () => _pick(FileType.video, _Kind.video, null),
+            ),
+          ),
+        ],
+      ),
+      if (media.isNotEmpty) ...[
+        const SizedBox(height: AppSpacing.s4),
+        _MediaStrip(media),
+      ],
+      if (docs.isNotEmpty) ...[
+        const SizedBox(height: AppSpacing.s3),
+        for (final row in docs) ...[row, const SizedBox(height: AppSpacing.s2)],
+      ],
+      const SizedBox(height: AppSpacing.s5),
+      const _Label('Note'),
+      const SizedBox(height: AppSpacing.s2),
+      TextField(
+        controller: _noteController,
+        minLines: 3,
+        maxLines: 6,
+        style: AppText.bodyLRegular,
+        decoration: InputDecoration(
+          hintText: 'Add note here',
+          hintStyle: AppText.bodyLRegular.copyWith(
+            color: AppColors.textSubtlest,
+          ),
+          filled: true,
+          fillColor: AppColors.bgDefault,
+          contentPadding: const EdgeInsets.all(AppSpacing.s3),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(AppRadius.md),
+            borderSide: BorderSide(color: AppColors.borderDefault),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(AppRadius.md),
+            borderSide: BorderSide(color: AppColors.borderDefault),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(AppRadius.md),
+            borderSide: const BorderSide(color: AppColors.borderFocus),
+          ),
+        ),
+      ),
+    ];
+  }
+
+  /// Read-only view of a submitted observation: finding chip, submitted meta,
+  /// records (tap to open), and note.
+  List<Widget> _viewChildren() {
+    final o = widget.observation;
+    final media = <Widget>[
+      for (final f in _existing)
+        if (f.isPhoto || f.isVideo)
+          _MediaThumb.view(f, onTap: () => _open(f.url)),
+    ];
+    final docs = <Widget>[
+      for (final f in _existing)
+        if (f.isDocument)
+          _DocRow(name: f.name, download: true, onAction: () => _open(f.url)),
+    ];
+    final note = (o.note ?? '').trim();
+
+    return [
+      Text(o.name, style: AppText.headingM),
+      const SizedBox(height: AppSpacing.s5),
+      const _Label('Finding'),
+      const SizedBox(height: AppSpacing.s2),
+      if (_finding != null)
+        Align(alignment: Alignment.centerLeft, child: _FindingChip(_finding!)),
+      if (o.submittedAt != null) ...[
+        const SizedBox(height: AppSpacing.s5),
+        const _Label('Submitted on'),
+        const SizedBox(height: AppSpacing.s1),
+        Text(
+          _dateFmt.format(o.submittedAt!.toLocal()),
+          style: AppText.bodyLRegular,
+        ),
+      ],
+      if (o.submittedBy != null) ...[
+        const SizedBox(height: AppSpacing.s5),
+        const _Label('Submitted by'),
+        const SizedBox(height: AppSpacing.s2),
+        Row(
+          children: [
+            // const AppAvatar(url: null, size: 24),
+            Image.asset(
+              'assets/images/2.0x/avatar.png',
+              width: 20, height: 20,
+            ),
+            const SizedBox(width: AppSpacing.s2),
+            Text(o.submittedBy!.name, style: AppText.bodyMMedium),
+          ],
+        ),
+      ],
+      if (media.isNotEmpty || docs.isNotEmpty) ...[
+        const SizedBox(height: AppSpacing.s5),
+        const _Label('Records'),
+        if (media.isNotEmpty) ...[
+          const SizedBox(height: AppSpacing.s3),
+          _MediaStrip(media),
+        ],
+        if (docs.isNotEmpty) ...[
+          const SizedBox(height: AppSpacing.s3),
+          for (final row in docs) ...[
+            row,
+            const SizedBox(height: AppSpacing.s2),
+          ],
+        ],
+      ],
+      if (note.isNotEmpty) ...[
+        const SizedBox(height: AppSpacing.s5),
+        const _Label('Note'),
+        const SizedBox(height: AppSpacing.s2),
+        Text(note, style: AppText.bodyLRegular),
+      ],
+    ];
+  }
+}
+
+/// Horizontal strip of media thumbnails.
+class _MediaStrip extends StatelessWidget {
+  const _MediaStrip(this.thumbs);
+  final List<Widget> thumbs;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 70,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        itemCount: thumbs.length,
+        separatorBuilder: (_, _) => const SizedBox(width: AppSpacing.s2),
+        itemBuilder: (_, i) => thumbs[i],
       ),
     );
   }
@@ -349,20 +467,24 @@ class _SheetHeader extends StatelessWidget {
       ),
       child: Row(
         children: [
-          const SizedBox(width: 24),
+          const SizedBox(width: AppSpacing.s4),
           Expanded(
             child: Text(
               title,
               textAlign: TextAlign.center,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: AppText.headingXs.copyWith(color: AppColors.textDefault),
+              style: AppText.bodyLMedium.copyWith(color: AppColors.textDefault),
             ),
           ),
           GestureDetector(
             onTap: () => Navigator.of(context).pop(),
             behavior: HitTestBehavior.opaque,
-            child: const Icon(Icons.close, size: 24, color: AppColors.iconDefault),
+            child: const Icon(
+              Icons.close,
+              size: 24,
+              color: AppColors.iconDefault,
+            ),
           ),
         ],
       ),
@@ -422,7 +544,9 @@ class _AddTile extends StatelessWidget {
               label,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: AppText.bodyMRegular.copyWith(color: AppColors.textDefault),
+              style: AppText.bodyMRegular.copyWith(
+                color: AppColors.textDefault,
+              ),
             ),
           ],
         ),
@@ -431,43 +555,55 @@ class _AddTile extends StatelessWidget {
   }
 }
 
-/// Photo/video thumbnail with a remove badge. Videos show a play overlay.
+/// Photo/video thumbnail. Videos show a play overlay. [onRemove] adds a delete
+/// badge (edit mode); [onTap] makes it tappable to open (view mode).
 class _MediaThumb extends StatelessWidget {
   const _MediaThumb._({
     required this.child,
     required this.isVideo,
-    required this.onRemove,
+    this.onRemove,
+    this.onTap,
   });
 
-  factory _MediaThumb.existing(AuditFile file, {required VoidCallback onRemove}) {
-    return _MediaThumb._(
-      isVideo: file.isVideo,
-      onRemove: onRemove,
-      child: file.isVideo
-          ? const ColoredBox(color: AppColors.bgSolid)
-          : CachedNetworkImage(imageUrl: file.url, fit: BoxFit.cover),
-    );
-  }
+  factory _MediaThumb.existing(
+    AuditFile file, {
+    required VoidCallback onRemove,
+  }) => _MediaThumb._(
+    isVideo: file.isVideo,
+    onRemove: onRemove,
+    child: file.isVideo
+        ? const ColoredBox(color: AppColors.bgSolid)
+        : CachedNetworkImage(imageUrl: file.url, fit: BoxFit.cover),
+  );
 
-  factory _MediaThumb.picked(_Picked file, {required VoidCallback onRemove}) {
-    return _MediaThumb._(
-      isVideo: file.kind == _Kind.video,
-      onRemove: onRemove,
-      child: file.kind == _Kind.video
-          ? const ColoredBox(color: AppColors.bgSolid)
-          : Image.file(File(file.path), fit: BoxFit.cover),
-    );
-  }
+  factory _MediaThumb.picked(_Picked file, {required VoidCallback onRemove}) =>
+      _MediaThumb._(
+        isVideo: file.kind == _Kind.video,
+        onRemove: onRemove,
+        child: file.kind == _Kind.video
+            ? const ColoredBox(color: AppColors.bgSolid)
+            : Image.file(File(file.path), fit: BoxFit.cover),
+      );
+
+  factory _MediaThumb.view(AuditFile file, {required VoidCallback onTap}) =>
+      _MediaThumb._(
+        isVideo: file.isVideo,
+        onTap: onTap,
+        child: file.isVideo
+            ? const ColoredBox(color: AppColors.bgSolid)
+            : CachedNetworkImage(imageUrl: file.url, fit: BoxFit.cover),
+      );
 
   final Widget child;
   final bool isVideo;
-  final VoidCallback onRemove;
+  final VoidCallback? onRemove;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: 88,
-      height: 88,
+    final thumb = SizedBox(
+      width: 110,
+      height: 70,
       child: Stack(
         fit: StackFit.expand,
         children: [
@@ -477,40 +613,64 @@ class _MediaThumb extends StatelessWidget {
           ),
           if (isVideo)
             const Center(
-              child: Icon(Icons.play_circle_fill,
-                  size: 32, color: AppColors.iconInverse),
-            ),
-          Positioned(
-            top: 4,
-            right: 4,
-            child: GestureDetector(
-              onTap: onRemove,
-              child: Container(
-                padding: const EdgeInsets.all(2),
-                decoration: const BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: AppColors.bgSolid,
-                ),
-                child: const Icon(Icons.close,
-                    size: 14, color: AppColors.iconInverse),
+              child: Icon(
+                Icons.play_circle_fill,
+                size: 32,
+                color: AppColors.iconInverse,
               ),
             ),
-          ),
+          if (onRemove != null)
+            Positioned(
+              top: 4,
+              right: 4,
+              child: GestureDetector(
+                onTap: onRemove,
+                child: Container(
+                  padding: const EdgeInsets.all(2),
+                  decoration: const BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: AppColors.bgSolid,
+                  ),
+                  child: const Icon(
+                    Icons.close,
+                    size: 14,
+                    color: AppColors.iconInverse,
+                  ),
+                ),
+              ),
+            ),
         ],
       ),
+    );
+    if (onTap == null) return thumb;
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: thumb,
     );
   }
 }
 
-/// Document row: file icon + name + delete.
+/// Document row: file icon + name + a trailing delete (edit) or download (view)
+/// action. In view mode the whole row is tappable to open.
 class _DocRow extends StatelessWidget {
-  const _DocRow({required this.name, required this.onRemove});
+  const _DocRow({
+    required this.name,
+    required this.onAction,
+    this.download = false,
+  });
   final String name;
-  final VoidCallback onRemove;
+  final VoidCallback onAction;
+  final bool download;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    final trailing = Icon(
+      download ? Icons.file_download_outlined : Icons.delete_outline,
+      size: 20,
+      color: AppColors.iconSubtle,
+    );
+    final row = Container(
       padding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.s3,
         vertical: AppSpacing.s3,
@@ -535,17 +695,57 @@ class _DocRow extends StatelessWidget {
               name,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: AppText.bodyMRegular.copyWith(color: AppColors.textDefault),
+              style: AppText.bodyMRegular.copyWith(
+                color: AppColors.textDefault,
+              ),
             ),
           ),
           const SizedBox(width: AppSpacing.s2),
-          GestureDetector(
-            onTap: onRemove,
-            behavior: HitTestBehavior.opaque,
-            child: const Icon(Icons.delete_outline,
-                size: 20, color: AppColors.iconSubtle),
-          ),
+          if (download)
+            trailing
+          else
+            GestureDetector(
+              onTap: onAction,
+              behavior: HitTestBehavior.opaque,
+              child: trailing,
+            ),
         ],
+      ),
+    );
+    if (!download) return row;
+    return GestureDetector(
+      onTap: onAction,
+      behavior: HitTestBehavior.opaque,
+      child: row,
+    );
+  }
+}
+
+/// Read-only finding pill for the view mode.
+class _FindingChip extends StatelessWidget {
+  const _FindingChip(this.finding);
+  final Finding finding;
+
+  @override
+  Widget build(BuildContext context) {
+    final (text, bg) = switch (finding) {
+      Finding.compliant => (AppColors.textSuccess, AppColors.bgSuccess),
+      Finding.nonCompliant => (AppColors.textDanger, AppColors.bgDanger),
+      Finding.na => (AppColors.textDefault, AppColors.bgPressed),
+    };
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.s3,
+        vertical: 3,
+      ),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(AppRadius.sm),
+        border: Border.all(color: text),
+      ),
+      child: Text(
+        finding.label,
+        style: AppText.buttonM.copyWith(color: text),
       ),
     );
   }
