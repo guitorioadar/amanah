@@ -40,26 +40,41 @@ class ShellScreen extends StatelessWidget {
         ),
         child: ClipRRect(
           borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-          child: NavigationBar(
-            selectedIndex: navigationShell.currentIndex,
-            onDestinationSelected: (i) => navigationShell.goBranch(
-              i,
-              initialLocation: i == navigationShell.currentIndex,
-            ),
-            backgroundColor: AppColors.bgDefault,
-            surfaceTintColor: AppColors.transparent,
-            shadowColor: AppColors.transparent,
-            elevation: 0,
-            indicatorColor: AppColors.bgInfo,
-            destinations: [
-              for (final tab in _tabs)
-                NavigationDestination(
-                  icon: _NavIcon(tab.icon, image: tab.image, selected: false),
-                  selectedIcon:
-                      _NavIcon(tab.icon, image: tab.image, selected: true),
-                  label: tab.label,
+          child: NavigationBarTheme(
+            data: NavigationBarThemeData(
+              // Inter Tight 600 · 11 / 16 per design.
+              labelTextStyle: WidgetStateProperty.resolveWith(
+                (states) => AppText.bodyXsMedium.copyWith(
+                  // fontSize: 11,
+                  // height: 16 / 11,
+                  // fontWeight: FontWeight.w600,
+                  color: states.contains(WidgetState.selected)
+                      ? AppColors.textBrand
+                      : AppColors.textDefault,
                 ),
-            ],
+              ),
+            ),
+            child: NavigationBar(
+              selectedIndex: navigationShell.currentIndex,
+              onDestinationSelected: (i) => navigationShell.goBranch(
+                i,
+                initialLocation: i == navigationShell.currentIndex,
+              ),
+              backgroundColor: AppColors.bgDefault,
+              surfaceTintColor: AppColors.transparent,
+              shadowColor: AppColors.transparent,
+              elevation: 0,
+              indicatorColor: AppColors.bgInfo,
+              destinations: [
+                for (final tab in _tabs)
+                  NavigationDestination(
+                    icon: _NavIcon(tab.icon, image: tab.image, selected: false),
+                    selectedIcon:
+                        _NavIcon(tab.icon, image: tab.image, selected: true),
+                    label: tab.label,
+                  ),
+              ],
+            ),
           ),
         ),
       ),
