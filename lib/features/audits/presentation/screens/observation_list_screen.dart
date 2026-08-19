@@ -114,7 +114,7 @@ class _TopBar extends StatelessWidget {
       ),
       padding: EdgeInsets.fromLTRB(
         AppSpacing.s3,
-        topInset + AppSpacing.s2,
+        topInset,
         AppSpacing.s3,
         AppSpacing.s3,
       ),
@@ -126,7 +126,7 @@ class _TopBar extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.all(AppSpacing.s1),
               child: SvgPicture.asset(
-                'assets/icons/line/ArrowLeft.svg',
+                'assets/icons/line/CaretLeft.svg',
                 width: 24,
                 colorFilter: const ColorFilter.mode(
                   AppColors.iconDefault,
@@ -141,7 +141,7 @@ class _TopBar extends StatelessWidget {
                 title,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: AppText.headingXs.copyWith(color: AppColors.textDefault),
+                style: AppText.bodyLMedium.copyWith(color: AppColors.textSubtle),
               ),
             ),
           ),
@@ -167,7 +167,7 @@ class _Body extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const SizedBox(height: AppSpacing.s5),
-          Text(category.title, style: AppText.headingL),
+          Text(category.title, style: AppText.headingM),
           const SizedBox(height: AppSpacing.s1),
           Text(
             '${category.observationsCompleted}/${category.observationsTotal} '
@@ -182,7 +182,7 @@ class _Body extends StatelessWidget {
               Text(
                 '${category.progressPercent}%',
                 style:
-                    AppText.bodyMMedium.copyWith(color: AppColors.textDefault),
+                    AppText.bodyXsRegular.copyWith(color: AppColors.textDefault),
               ),
             ],
           ),
@@ -233,6 +233,7 @@ class _ProgressBar extends StatelessWidget {
           alignment: Alignment.centerLeft,
           child: FractionallySizedBox(
             widthFactor: percent.clamp(0, 100) / 100,
+            heightFactor: 1,
             child: const ColoredBox(color: AppColors.brand),
           ),
         ),
@@ -287,7 +288,7 @@ class _ObservationCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(observation.name, style: AppText.bodyLMedium),
+                Text(observation.name, style: AppText.bodyLRegular),
                 const SizedBox(height: AppSpacing.s2),
                 FindingSelector(
                   selected: observation.findingValue,
@@ -351,7 +352,7 @@ class _RecordsRow extends StatelessWidget {
   List<Widget> _chips() {
     final chips = <Widget>[];
     void add(String icon, String label) {
-      if (chips.isNotEmpty) chips.add(const SizedBox(width: AppSpacing.s2));
+      if (chips.isNotEmpty) chips.add(const SizedBox(width: AppSpacing.s1));
       chips.add(_RecordChip(icon: icon, label: label));
     }
 
@@ -380,11 +381,11 @@ class _RecordChip extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.s3,
+        horizontal: AppSpacing.s2,
         vertical: 3,
       ),
       decoration: BoxDecoration(
-        color: AppColors.bgHovered,
+        color: AppColors.bgPressed,
         borderRadius: BorderRadius.circular(AppRadius.sm),
       ),
       child: Row(
@@ -392,7 +393,7 @@ class _RecordChip extends StatelessWidget {
         children: [
           SvgPicture.asset(
             'assets/icons/line/$icon.svg',
-            width: 16,
+            width: 14,
             colorFilter: const ColorFilter.mode(
               AppColors.iconSubtle,
               BlendMode.srcIn,
@@ -401,7 +402,7 @@ class _RecordChip extends StatelessWidget {
           const SizedBox(width: AppSpacing.s1),
           Text(
             label,
-            style: AppText.buttonS.copyWith(color: AppColors.textDefault),
+            style: AppText.bodyXsMedium.copyWith(color: AppColors.textDefault),
           ),
         ],
       ),

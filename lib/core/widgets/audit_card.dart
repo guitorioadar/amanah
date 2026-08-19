@@ -157,7 +157,10 @@ class _Footer extends StatelessWidget {
       children: [
         ProgressRing(
           percent: audit.progressPercent,
-          color: isCompleted ? AppColors.iconSuccess : AppColors.iconAmber,
+          color: isCompleted ? AppColors.ringSuccess : AppColors.ringWarning,
+          track: isCompleted
+              ? AppColors.ringSuccessTrack
+              : AppColors.ringWarningTrack,
         ),
         const SizedBox(width: AppSpacing.s2),
         Text(

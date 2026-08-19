@@ -73,7 +73,7 @@ class _Pill extends StatelessWidget {
           finding.label,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style: AppText.buttonS.copyWith(
+          style: AppText.buttonM.copyWith(
             color: selected ? text : AppColors.textDefault,
           ),
         ),

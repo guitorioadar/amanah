@@ -42,40 +42,41 @@ class AuditDetailsScreen extends ConsumerWidget {
           children: [
             ColoredBox(
               color: AppColors.bgDefault,
-            child: async.when(
-              loading: () => const Column(
-                children: [
-                  _TopBar(),
-                  Expanded(child: AuditDetailsSkeleton()),
-                ],
-              ),
-              error: (_, _) => Column(
-                children: [
-                  const _TopBar(),
-                  Expanded(
-                    child: Center(
-                      child: Padding(
-                        padding: const EdgeInsets.all(AppSpacing.s6),
-                        child: Text(
-                          "Couldn't load this audit. Please try again.",
-                          textAlign: TextAlign.center,
-                          style: AppText.bodyMRegular
-                              .copyWith(color: AppColors.textSubtle),
+              child: async.when(
+                loading: () => const Column(
+                  children: [
+                    _TopBar(),
+                    Expanded(child: AuditDetailsSkeleton()),
+                  ],
+                ),
+                error: (_, _) => Column(
+                  children: [
+                    const _TopBar(),
+                    Expanded(
+                      child: Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(AppSpacing.s6),
+                          child: Text(
+                            "Couldn't load this audit. Please try again.",
+                            textAlign: TextAlign.center,
+                            style: AppText.bodyMRegular.copyWith(
+                              color: AppColors.textSubtle,
+                            ),
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                ],
-              ),
-              data: (detail) => Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  _Header(detail),
-                  Expanded(child: _Body(detail)),
-                ],
+                  ],
+                ),
+                data: (detail) => Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _Header(detail),
+                    Expanded(child: _Body(detail)),
+                  ],
+                ),
               ),
             ),
-          ),
             Positioned(
               top: 0,
               left: 0,
@@ -115,7 +116,7 @@ class _TopBar extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.all(AppSpacing.s1),
               child: SvgPicture.asset(
-                'assets/icons/line/ArrowLeft.svg',
+                'assets/icons/line/CaretLeft.svg',
                 width: 24,
                 colorFilter: const ColorFilter.mode(
                   AppColors.iconInverse,
@@ -128,8 +129,7 @@ class _TopBar extends StatelessWidget {
             child: Center(
               child: Text(
                 'Audit details',
-                style:
-                    AppText.headingXs.copyWith(color: AppColors.textInverse),
+                style: AppText.headingXs.copyWith(color: AppColors.textInverse),
               ),
             ),
           ),
@@ -209,7 +209,9 @@ class _Header extends StatelessWidget {
                 const SizedBox(height: AppSpacing.s4),
                 Text(
                   detail.title,
-                  style: AppText.headingL.copyWith(color: AppColors.textInverse),
+                  style: AppText.headingL.copyWith(
+                    color: AppColors.textInverse,
+                  ),
                 ),
                 const SizedBox(height: AppSpacing.s3),
                 if (detail.location != null)
@@ -307,8 +309,7 @@ class _CompletionBar extends StatelessWidget {
               'observations completed',
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style:
-                  AppText.bodyMMedium.copyWith(color: AppColors.textInverse),
+              style: AppText.bodyMMedium.copyWith(color: AppColors.textInverse),
             ),
           ),
           const SizedBox(width: AppSpacing.s3),
@@ -316,8 +317,11 @@ class _CompletionBar extends StatelessWidget {
             percent: detail.progressPercent,
             size: 22,
             color: detail.isCompleted
-                ? AppColors.iconSuccess
-                : AppColors.iconAmber,
+                ? AppColors.ringSuccess
+                : AppColors.ringWarning,
+            track: detail.isCompleted
+                ? AppColors.ringSuccessTrack
+                : AppColors.ringWarningTrack,
           ),
           const SizedBox(width: AppSpacing.s2),
           Text(
@@ -445,19 +449,22 @@ class _BodyState extends ConsumerState<_Body> {
                           parent: ClampingScrollPhysics(),
                         ),
                         child: ConstrainedBox(
-                          constraints:
-                              BoxConstraints(minHeight: constraints.maxHeight),
+                          constraints: BoxConstraints(
+                            minHeight: constraints.maxHeight,
+                          ),
                           child: Center(
                             child: Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(vertical: AppSpacing.s9),
+                              padding: const EdgeInsets.symmetric(
+                                vertical: AppSpacing.s9,
+                              ),
                               child: Text(
                                 _query.isEmpty
                                     ? 'No observation categories yet.'
                                     : 'No categories match "$_query".',
                                 textAlign: TextAlign.center,
-                                style: AppText.bodyMRegular
-                                    .copyWith(color: AppColors.textSubtle),
+                                style: AppText.bodyMRegular.copyWith(
+                                  color: AppColors.textSubtle,
+                                ),
                               ),
                             ),
                           ),
@@ -521,72 +528,87 @@ class _CategoryCard extends StatelessWidget {
             border: Border.all(color: AppColors.borderDefault),
           ),
           child: Padding(
-            padding: const EdgeInsets.all(AppSpacing.s4),
+            padding: const EdgeInsets.all(AppSpacing.s3),
             child: Column(
               children: [
-                Row(
-                  children: [
-                    _CategoryIcon(category.iconUrl),
-                    const SizedBox(width: AppSpacing.s3),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Flexible(
-                                child: Text(
-                                  category.title,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: AppText.bodyLMedium,
+                IntrinsicHeight(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Align(
+                        alignment: Alignment.topCenter,
+                        child: Padding(
+                          padding: const EdgeInsets.only(top: AppSpacing.s1),
+                          child: _CategoryIcon(category.iconUrl, size: 34),
+                        ),
+                      ),
+                      const SizedBox(width: AppSpacing.s3),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Flexible(
+                                  child: Text(
+                                    category.title,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: AppText.bodyLMedium,
+                                  ),
                                 ),
+                                if (done) ...[
+                                  const SizedBox(width: AppSpacing.s2),
+                                  SvgPicture.asset(
+                                    'assets/icons/fill/CheckCircle.svg',
+                                    width: 18,
+                                    colorFilter: const ColorFilter.mode(
+                                      AppColors.iconSuccess,
+                                      BlendMode.srcIn,
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
+                            const SizedBox(height: AppSpacing.s1),
+                            Text(
+                              '${category.observationsCompleted}/'
+                              '${category.observationsTotal} Observation completed',
+                              style: AppText.bodyMRegular.copyWith(
+                                color: AppColors.textSubtle,
                               ),
-                              if (done) ...[
-                                const SizedBox(width: AppSpacing.s2),
-                                SvgPicture.asset(
-                                  'assets/icons/fill/CheckCircle.svg',
-                                  width: 18,
-                                  colorFilter: const ColorFilter.mode(
-                                    AppColors.iconSuccess,
-                                    BlendMode.srcIn,
+                            ),
+                            const SizedBox(height: AppSpacing.s1),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: _ProgressBar(category.progressPercent),
+                                ),
+                                const SizedBox(width: AppSpacing.s3),
+                                Text(
+                                  '${category.progressPercent}%',
+                                  style: AppText.bodyMMedium.copyWith(
+                                    color: AppColors.textDefault,
                                   ),
                                 ),
                               ],
-                            ],
-                          ),
-                          const SizedBox(height: AppSpacing.s1),
-                          Text(
-                            '${category.observationsCompleted}/'
-                            '${category.observationsTotal} Observation completed',
-                            style: AppText.bodyMRegular
-                                .copyWith(color: AppColors.textSubtle),
-                          ),
-                        ],
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: AppSpacing.s2),
-                    SvgPicture.asset(
-                      'assets/icons/line/CaretRight.svg',
-                      width: 18,
-                      colorFilter: const ColorFilter.mode(
-                        AppColors.iconSubtle,
-                        BlendMode.srcIn,
+                      const SizedBox(width: AppSpacing.s2),
+                      Align(
+                        child: SvgPicture.asset(
+                          'assets/icons/line/CaretRight.svg',
+                          width: 18,
+                          colorFilter: const ColorFilter.mode(
+                            AppColors.iconSubtle,
+                            BlendMode.srcIn,
+                          ),
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: AppSpacing.s3),
-                Row(
-                  children: [
-                    Expanded(child: _ProgressBar(category.progressPercent)),
-                    const SizedBox(width: AppSpacing.s3),
-                    Text(
-                      '${category.progressPercent}%',
-                      style: AppText.bodyMMedium
-                          .copyWith(color: AppColors.textDefault),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ],
             ),
@@ -599,14 +621,16 @@ class _CategoryCard extends StatelessWidget {
 
 /// Circular tinted badge holding the category's network icon.
 class _CategoryIcon extends StatelessWidget {
-  const _CategoryIcon(this.url);
+  const _CategoryIcon(this.url, {this.size = 44});
   final String? url;
+  final double size;
 
   @override
   Widget build(BuildContext context) {
+    final iconSize = size * 0.6;
     return Container(
-      width: 44,
-      height: 44,
+      width: size,
+      height: size,
       decoration: const BoxDecoration(
         shape: BoxShape.circle,
         color: AppColors.bgHovered,
@@ -616,8 +640,8 @@ class _CategoryIcon extends StatelessWidget {
           ? const _IconFallback()
           : CachedNetworkImage(
               imageUrl: url!,
-              width: 24,
-              height: 24,
+              width: iconSize,
+              height: iconSize,
               fit: BoxFit.contain,
               placeholder: (_, _) => const _IconFallback(),
               errorWidget: (_, _, _) => const _IconFallback(),
@@ -652,17 +676,19 @@ class _ProgressBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final fraction = percent.clamp(0, 100) / 100;
-    final color =
-        percent >= 100 ? AppColors.iconSuccess : AppColors.iconAmber;
+    final color = percent >= 100
+        ? AppColors.progressComplete
+        : AppColors.progressActive;
     return ClipRRect(
       borderRadius: BorderRadius.circular(AppRadius.pill),
       child: Container(
         height: 6,
-        color: AppColors.bgPressed,
+        color: AppColors.progressTrack,
         child: Align(
           alignment: Alignment.centerLeft,
           child: FractionallySizedBox(
             widthFactor: fraction,
+            heightFactor: 1,
             child: ColoredBox(color: color),
           ),
         ),

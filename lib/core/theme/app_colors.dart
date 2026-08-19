@@ -76,4 +76,16 @@ abstract final class AppColors {
 
   /// In-progress audit ring / amber accent.
   static const Color iconAmber = AppPalette.orange10;
+
+  // ── Progress ring (donut) ──
+  static const Color ringEmpty = AppPalette.neutral4; // #DCDFE4 (0% ring)
+  static const Color ringWarning = AppPalette.yellow10; // #DA9111 arc
+  static const Color ringWarningTrack = AppPalette.yellow5; // #FFCD76 fill
+  static const Color ringSuccess = AppPalette.green10; // #2B9A66 arc
+  static const Color ringSuccessTrack = AppPalette.green10; // solid at 100%
+
+  // ── Linear progress bar ──
+  static const Color progressTrack = AppPalette.neutral4; // #DCDFE4
+  static const Color progressActive = AppPalette.orange8; // #F76B15
+  static const Color progressComplete = AppPalette.teal10; // #12A594
 }

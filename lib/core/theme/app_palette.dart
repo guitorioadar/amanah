@@ -65,6 +65,12 @@ abstract final class AppPalette {
   static const green11 = Color(0xFF218358);
   static const green12 = Color(0xFF193B2D);
 
+  // ── Chart / accents (progress ring + bar) ──
+  static const yellow5 = Color(0xFFFFCD76); // ring track (in-progress)
+  static const yellow10 = Color(0xFFDA9111); // ring stroke (in-progress)
+  static const teal10 = Color(0xFF12A594); // progress bar (complete)
+  static const orange8 = Color(0xFFF76B15); // progress bar (in-progress)
+
   // ── Purple (discovery) ──
   static const purple7 = Color(0xFFD1AFEC);
   static const purple9 = Color(0xFF8E4EC6);
