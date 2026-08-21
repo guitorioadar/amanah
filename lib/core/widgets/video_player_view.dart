@@ -20,12 +20,17 @@ class VideoPlayerView extends StatefulWidget {
   const VideoPlayerView({
     required this.source,
     required this.isLocal,
+    this.onControlsVisibilityChanged,
     super.key,
   });
 
   /// File path (local) or URL (remote).
   final String source;
   final bool isLocal;
+
+  /// Notified whenever the control overlay shows or hides, so a parent (e.g.
+  /// the media viewer chrome) can sync its own overlays to it.
+  final ValueChanged<bool>? onControlsVisibilityChanged;
 
   @override
   State<VideoPlayerView> createState() => _VideoPlayerViewState();
@@ -37,7 +42,9 @@ class _VideoPlayerViewState extends State<VideoPlayerView> {
       : VideoPlayerController.networkUrl(Uri.parse(widget.source));
   bool _ready = false;
   Object? _error;
-  bool _controlsVisible = true;
+  // Starts hidden and is revealed by the post-init ping, which also notifies
+  // the parent so viewer chrome fades in together with the overlay.
+  bool _controlsVisible = false;
   Timer? _hideTimer;
 
   static const _hideAfter = Duration(seconds: 15);
@@ -73,22 +80,28 @@ class _VideoPlayerViewState extends State<VideoPlayerView> {
   /// calling play/pause, before the controller reports the new value).
   void _pingControls({bool? autoHide}) {
     _hideTimer?.cancel();
-    setState(() => _controlsVisible = true);
+    _setControlsVisible(true);
     final shouldHide = autoHide ?? _controller.value.isPlaying;
     if (shouldHide) {
       _hideTimer = Timer(_hideAfter, () {
         // Never hide over a paused frame: the user needs the play button.
         if (mounted && _controller.value.isPlaying) {
-          setState(() => _controlsVisible = false);
+          _setControlsVisible(false);
         }
       });
     }
   }
 
+  void _setControlsVisible(bool visible) {
+    if (_controlsVisible == visible) return;
+    setState(() => _controlsVisible = visible);
+    widget.onControlsVisibilityChanged?.call(visible);
+  }
+
   void _onFrameTap() {
     if (_controlsVisible && _controller.value.isPlaying) {
       _hideTimer?.cancel();
-      setState(() => _controlsVisible = false);
+      _setControlsVisible(false);
     } else {
       _pingControls();
     }

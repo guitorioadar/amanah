@@ -251,7 +251,7 @@ class _EnterSubmissionSheetState extends ConsumerState<_EnterSubmissionSheet> {
               child: isView
                   // View mode: "Submit again" activates the editable form.
                   ? AppButton(
-                      label: 'Submit again',
+                      label: 'Submit Again',
                       outlined: true,
                       onPressed: () => setState(() => _mode = _Mode.edit),
                     )

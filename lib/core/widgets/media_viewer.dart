@@ -60,6 +60,10 @@ class _MediaViewerState extends State<_MediaViewer> {
       PageController(initialPage: widget.initialIndex);
   late int _index = widget.initialIndex;
 
+  /// Whether the close button / counter chrome is showing. Hidden initially;
+  /// a tap toggles it (images) or follows the video control overlay (videos).
+  bool _chromeVisible = false;
+
   /// Vertical drag offset for the swipe-to-dismiss gesture.
   double _dragDy = 0;
 
@@ -83,6 +87,11 @@ class _MediaViewerState extends State<_MediaViewer> {
     } else {
       setState(() => _dragDy = 0);
     }
+  }
+
+  /// Video pages drive the chrome through the player's control overlay.
+  void _onVideoControlsVisibility(bool visible) {
+    if (mounted) setState(() => _chromeVisible = visible);
   }
 
   @override
@@ -120,37 +129,55 @@ class _MediaViewerState extends State<_MediaViewer> {
                         ? VideoPlayerView(
                             source: item.source,
                             isLocal: item.isLocal,
+                            onControlsVisibilityChanged:
+                                _onVideoControlsVisibility,
                           )
-                        : _ImagePage(item: item);
+                        : GestureDetector(
+                            // Tap toggles the chrome on image pages.
+                            onTap: () =>
+                                setState(() => _chromeVisible = !_chromeVisible),
+                            child: _ImagePage(item: item),
+                          );
                   },
                 ),
               ),
             ),
           ),
-          Positioned(
-            top: topInset + 8,
-            left: 8,
-            child: _RoundIcon(
-              icon: Icons.close,
-              onTap: () => Navigator.of(context).pop(),
-            ),
-          ),
-          if (multiple)
-            Positioned(
-              top: topInset + 16,
-              left: 0,
-              right: 0,
-              child: Center(
-                child: Text(
-                  '${_index + 1} / ${widget.items.length}',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
+          AnimatedOpacity(
+            opacity: _chromeVisible ? 1 : 0,
+            duration: const Duration(milliseconds: 200),
+            child: IgnorePointer(
+              ignoring: !_chromeVisible,
+              child: Stack(
+                children: [
+                  Positioned(
+                    top: topInset + 8,
+                    left: 8,
+                    child: _RoundIcon(
+                      icon: Icons.close,
+                      onTap: () => Navigator.of(context).pop(),
+                    ),
                   ),
-                ),
+                  if (multiple)
+                    Positioned(
+                      top: topInset + 16,
+                      left: 0,
+                      right: 0,
+                      child: Center(
+                        child: Text(
+                          '${_index + 1} / ${widget.items.length}',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
               ),
             ),
+          ),
         ],
       ),
     );
