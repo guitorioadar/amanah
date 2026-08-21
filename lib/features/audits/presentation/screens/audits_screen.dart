@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io' show Platform;
 
 import 'package:amanah/core/theme/app_colors.dart';
 import 'package:amanah/core/theme/app_spacing.dart';
@@ -38,6 +39,8 @@ class AuditsScreen extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                if (Platform.isAndroid)
+                  const SizedBox(height: AppSpacing.s2),
                 _Header(name: user?.name, avatarUrl: user?.profilePictureUrl),
                 const Expanded(child: _AuditsBody()),
               ],
