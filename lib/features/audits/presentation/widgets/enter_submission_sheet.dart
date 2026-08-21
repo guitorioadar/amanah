@@ -10,6 +10,7 @@ import 'package:amanah/core/widgets/finding_selector.dart';
 import 'package:amanah/core/widgets/media_viewer.dart';
 import 'package:amanah/core/widgets/skeletons/thumb_shimmer.dart';
 import 'package:amanah/core/widgets/thumb_error.dart';
+import 'package:amanah/core/widgets/video_thumbnail_image.dart';
 import 'package:amanah/features/audits/data/models/audit_detail.dart';
 import 'package:amanah/features/audits/presentation/providers/audit_providers.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -628,7 +629,7 @@ class _MediaThumb extends StatelessWidget {
     onRemove: onRemove,
     onTap: onTap,
     child: file.isVideo
-        ? const ColoredBox(color: AppColors.bgSolid)
+        ? VideoThumbnailImage(source: file.url)
         : CachedNetworkImage(
             imageUrl: file.url,
             fit: BoxFit.cover,
@@ -646,7 +647,7 @@ class _MediaThumb extends StatelessWidget {
     onRemove: onRemove,
     onTap: onTap,
     child: file.kind == _Kind.video
-        ? const ColoredBox(color: AppColors.bgSolid)
+        ? VideoThumbnailImage(source: file.path)
         : Image.file(File(file.path), fit: BoxFit.cover),
   );
 
@@ -655,7 +656,7 @@ class _MediaThumb extends StatelessWidget {
         isVideo: file.isVideo,
         onTap: onTap,
         child: file.isVideo
-            ? const ColoredBox(color: AppColors.bgSolid)
+            ? VideoThumbnailImage(source: file.url)
             : CachedNetworkImage(
                 imageUrl: file.url,
                 fit: BoxFit.cover,

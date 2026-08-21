@@ -44,6 +44,18 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
+# Android/Gradle build output
+/android/build/
+/android/.gradle/
+
+# iOS — CocoaPods, Xcode user state, and Flutter-generated config that is
+# regenerated on every build (never commit these).
+/ios/Pods/
+**/xcuserdata/
+**/ios/Flutter/Generated.xcconfig
+**/ios/Flutter/flutter_export_environment.sh
+**/ios/Flutter/ephemeral/
+
 # Env — commit ONLY the template. Every real env file (.env, .env.dev,
 # .env.prod, local overrides) stays out of git; create them from .env.example.
 /env/*
