@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:amanah/core/widgets/video_player_view.dart';
@@ -64,6 +65,14 @@ class _MediaViewerState extends State<_MediaViewer> {
   /// a tap toggles it (images) or follows the video control overlay (videos).
   bool _chromeVisible = false;
 
+  /// Whether the CURRENT page's image is zoomed in (lifted from the page so
+  /// the pager can stop horizontal swiping while the user pans the image).
+  bool _imageZoomed = false;
+
+  /// Fingers currently on the media area. While > 1 (pinch) the dismiss drag
+  /// and page swiping step aside so the pinch always wins the gesture arena.
+  int _pointers = 0;
+
   /// Vertical drag offset for the swipe-to-dismiss gesture.
   double _dragDy = 0;
 
@@ -94,6 +103,18 @@ class _MediaViewerState extends State<_MediaViewer> {
     if (mounted) setState(() => _chromeVisible = visible);
   }
 
+  void _onPointerDown(PointerDownEvent _) {
+    if (_pointers == 0) setState(() => _pointers = 1);
+  }
+
+  void _onPointerUp(PointerUpEvent _) {
+    if (_pointers > 0) setState(() => _pointers = 0);
+  }
+
+  /// True while a pinch is in flight or the image is zoomed: the dismiss
+  /// drag, page swiping, and chrome-toggle tap must not fire then.
+  bool get _mediaLocked => _pointers >= 2 || _imageZoomed;
+
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.sizeOf(context);
@@ -111,34 +132,45 @@ class _MediaViewerState extends State<_MediaViewer> {
           Positioned.fill(
             child: ColoredBox(color: Colors.black.withValues(alpha: bgOpacity)),
           ),
-          // Media pager — translated + scaled by the dismiss drag.
+          // Media pager — translated + scaled by the dismiss drag. The
+          // Listener counts fingers: with 2+ down (a pinch) the dismiss drag
+          // and page swiping stand down so the pinch wins.
           Transform.translate(
             offset: Offset(0, _dragDy),
             child: Transform.scale(
               scale: scale,
-              child: GestureDetector(
-                onVerticalDragUpdate: _onDragUpdate,
-                onVerticalDragEnd: _onDragEnd,
-                child: PageView.builder(
-                  controller: _pageController,
-                  itemCount: widget.items.length,
-                  onPageChanged: (i) => setState(() => _index = i),
-                  itemBuilder: (_, i) {
-                    final item = widget.items[i];
-                    return item.isVideo
-                        ? VideoPlayerView(
-                            source: item.source,
-                            isLocal: item.isLocal,
-                            onControlsVisibilityChanged:
-                                _onVideoControlsVisibility,
-                          )
-                        : GestureDetector(
-                            // Tap toggles the chrome on image pages.
-                            onTap: () =>
-                                setState(() => _chromeVisible = !_chromeVisible),
-                            child: _ImagePage(item: item),
-                          );
-                  },
+              child: Listener(
+                onPointerDown: _onPointerDown,
+                onPointerUp: _onPointerUp,
+                child: GestureDetector(
+                  onVerticalDragUpdate: _mediaLocked ? null : _onDragUpdate,
+                  onVerticalDragEnd: _mediaLocked ? null : _onDragEnd,
+                  child: PageView.builder(
+                    controller: _pageController,
+                    physics: _mediaLocked
+                        ? const NeverScrollableScrollPhysics()
+                        : const PageScrollPhysics(),
+                    itemCount: widget.items.length,
+                    onPageChanged: (i) => setState(() => _index = i),
+                    itemBuilder: (_, i) {
+                      final item = widget.items[i];
+                      return item.isVideo
+                          ? VideoPlayerView(
+                              source: item.source,
+                              isLocal: item.isLocal,
+                              onControlsVisibilityChanged:
+                                  _onVideoControlsVisibility,
+                            )
+                          : _ImagePage(
+                              item: item,
+                              onTap: () => setState(
+                                () => _chromeVisible = !_chromeVisible,
+                              ),
+                              onZoomedChanged: (z) =>
+                                  setState(() => _imageZoomed = z),
+                            );
+                    },
+                  ),
                 ),
               ),
             ),
@@ -184,20 +216,40 @@ class _MediaViewerState extends State<_MediaViewer> {
   }
 }
 
-/// Pinch/pan-zoomable image page (network or local). Panning is enabled only
-/// while zoomed in, so a plain vertical drag at rest reaches the dismiss
-/// gesture instead of being swallowed by the viewer.
+/// Pinch/pan-zoomable image page (network or local). Double-tap toggles
+/// between 1x and a tap-point-anchored 2.5x; a single tap toggles the viewer
+/// chrome. Panning is enabled only while zoomed in, so a plain vertical drag
+/// at rest reaches the dismiss gesture instead of being swallowed here.
 class _ImagePage extends StatefulWidget {
-  const _ImagePage({required this.item});
+  const _ImagePage({
+    required this.item,
+    required this.onTap,
+    required this.onZoomedChanged,
+  });
+
   final MediaItem item;
+  final VoidCallback onTap;
+  final ValueChanged<bool> onZoomedChanged;
 
   @override
   State<_ImagePage> createState() => _ImagePageState();
 }
 
-class _ImagePageState extends State<_ImagePage> {
+class _ImagePageState extends State<_ImagePage>
+    with TickerProviderStateMixin {
   final _transform = TransformationController();
   bool _zoomed = false;
+  // Both are created lazily per double-tap and replaced on each new one, so
+  // they stay nullable despite what the lint suggests.
+  // ignore: use_late_for_private_fields_and_variables
+  Matrix4Tween? _tween;
+  // Same reason as _tween above.
+  AnimationController? _anim;
+  // The most recent double-tap's down position; consumed by the zoom handler.
+  // ignore: use_late_for_private_fields_and_variables
+  TapDownDetails? _lastDoubleTapDown;
+
+  static const _doubleTapScale = 2.5;
 
   @override
   void initState() {
@@ -207,11 +259,49 @@ class _ImagePageState extends State<_ImagePage> {
 
   void _onTransform() {
     final zoomed = _transform.value.getMaxScaleOnAxis() > 1.01;
-    if (zoomed != _zoomed) setState(() => _zoomed = zoomed);
+    if (zoomed != _zoomed) {
+      setState(() => _zoomed = zoomed);
+      widget.onZoomedChanged(zoomed);
+    }
+  }
+
+  /// Double-tap: zoom to 2.5x anchored at the tapped point (or reset), with
+  /// a short animated tween instead of an abrupt jump.
+  void _onDoubleTap(TapDownDetails d) {
+    const s = _doubleTapScale;
+    if (_transform.value.getMaxScaleOnAxis() > 1.01) {
+      _animateTo(Matrix4.identity());
+    } else {
+      // Scale about the tapped point: translate by p*(1-s) so p stays fixed.
+      // Entries are set directly — scaleByDouble(s,s,s,s) would also scale the
+      // homogeneous w row, and the pipeline's w-division cancels the zoom.
+      final p = d.localPosition;
+      final target = Matrix4.identity()
+        ..setEntry(0, 0, s)
+        ..setEntry(1, 1, s)
+        ..setEntry(0, 3, p.dx * (1 - s))
+        ..setEntry(1, 3, p.dy * (1 - s));
+      _animateTo(target);
+    }
+  }
+
+  void _animateTo(Matrix4 target) {
+    _anim?.dispose();
+    _tween = Matrix4Tween(begin: _transform.value, end: target);
+    final controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 250),
+    );
+    controller.addListener(() {
+      _transform.value = _tween!.evaluate(controller);
+    });
+    _anim = controller;
+    unawaited(controller.forward());
   }
 
   @override
   void dispose() {
+    _anim?.dispose();
     _transform
       ..removeListener(_onTransform)
       ..dispose();
@@ -237,12 +327,20 @@ class _ImagePageState extends State<_ImagePage> {
               ),
             ),
           );
-    return InteractiveViewer(
-      transformationController: _transform,
-      minScale: 1,
-      maxScale: 4,
-      panEnabled: _zoomed,
-      child: Center(child: image),
+    // Both taps on ONE detector: Flutter then holds the single tap until the
+    // double-tap window closes, so a real double-tap never toggles the chrome.
+    return GestureDetector(
+      onTap: widget.onTap,
+      onDoubleTapDown: (d) => _lastDoubleTapDown = d,
+      onDoubleTap: () => _onDoubleTap(_lastDoubleTapDown!),
+      behavior: HitTestBehavior.opaque,
+      child: InteractiveViewer(
+        transformationController: _transform,
+        minScale: 1,
+        maxScale: 4,
+        panEnabled: _zoomed,
+        child: Center(child: image),
+      ),
     );
   }
 }
