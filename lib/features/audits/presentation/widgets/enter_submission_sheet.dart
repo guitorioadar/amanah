@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:amanah/core/network/api_exception.dart';
@@ -6,6 +7,9 @@ import 'package:amanah/core/theme/app_spacing.dart';
 import 'package:amanah/core/theme/app_text_styles.dart';
 import 'package:amanah/core/widgets/app_button.dart';
 import 'package:amanah/core/widgets/finding_selector.dart';
+import 'package:amanah/core/widgets/media_viewer.dart';
+import 'package:amanah/core/widgets/skeletons/thumb_shimmer.dart';
+import 'package:amanah/core/widgets/thumb_error.dart';
 import 'package:amanah/features/audits/data/models/audit_detail.dart';
 import 'package:amanah/features/audits/presentation/providers/audit_providers.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -91,6 +95,23 @@ class _EnterSubmissionSheetState extends ConsumerState<_EnterSubmissionSheet> {
     if (uri == null) return;
     await launchUrl(uri, mode: LaunchMode.externalApplication);
   }
+
+  /// Maps an attachment (existing [AuditFile] or freshly [_Picked]) to a
+  /// previewable [MediaItem] for the in-app viewer.
+  MediaItem _mediaItem(Object ref) {
+    if (ref case final AuditFile f) {
+      return f.isVideo
+          ? MediaItem.networkVideo(f.url)
+          : MediaItem.networkImage(f.url);
+    }
+    final p = ref as _Picked;
+    return p.kind == _Kind.video
+        ? MediaItem.fileVideo(p.path)
+        : MediaItem.fileImage(p.path);
+  }
+
+  void _preview(List<MediaItem> items, int index) =>
+      unawaited(showMediaViewer(context, items: items, initialIndex: index));
 
   int get _totalFiles => _existing.length + _newFiles.length;
 
@@ -246,13 +267,27 @@ class _EnterSubmissionSheetState extends ConsumerState<_EnterSubmissionSheet> {
   /// Editable form: finding selector, add-record tiles, removable attachments,
   /// note field.
   List<Widget> _editChildren() {
-    final media = <Widget>[
+    final mediaRefs = <Object>[
       for (final f in _existing)
-        if (f.isPhoto || f.isVideo)
-          _MediaThumb.existing(f, onRemove: () => _removeExisting(f)),
+        if (f.isPhoto || f.isVideo) f,
       for (final f in _newFiles)
-        if (f.kind != _Kind.document)
-          _MediaThumb.picked(f, onRemove: () => _removeNew(f)),
+        if (f.kind != _Kind.document) f,
+    ];
+    final mediaItems = [for (final r in mediaRefs) _mediaItem(r)];
+    final media = <Widget>[
+      for (var i = 0; i < mediaRefs.length; i++)
+        if (mediaRefs[i] case final AuditFile f)
+          _MediaThumb.existing(
+            f,
+            onRemove: () => _removeExisting(f),
+            onTap: () => _preview(mediaItems, i),
+          )
+        else if (mediaRefs[i] case final _Picked p)
+          _MediaThumb.picked(
+            p,
+            onRemove: () => _removeNew(p),
+            onTap: () => _preview(mediaItems, i),
+          ),
     ];
     final docs = <Widget>[
       for (final f in _existing)
@@ -361,10 +396,17 @@ class _EnterSubmissionSheetState extends ConsumerState<_EnterSubmissionSheet> {
   /// records (tap to open), and note.
   List<Widget> _viewChildren() {
     final o = widget.observation;
-    final media = <Widget>[
+    final mediaFiles = <AuditFile>[
       for (final f in _existing)
-        if (f.isPhoto || f.isVideo)
-          _MediaThumb.view(f, onTap: () => _open(f.url)),
+        if (f.isPhoto || f.isVideo) f,
+    ];
+    final mediaItems = [for (final f in mediaFiles) _mediaItem(f)];
+    final media = <Widget>[
+      for (var i = 0; i < mediaFiles.length; i++)
+        _MediaThumb.view(
+          mediaFiles[i],
+          onTap: () => _preview(mediaItems, i),
+        ),
     ];
     final docs = <Widget>[
       for (final f in _existing)
@@ -576,22 +618,33 @@ class _MediaThumb extends StatelessWidget {
   factory _MediaThumb.existing(
     AuditFile file, {
     required VoidCallback onRemove,
+    VoidCallback? onTap,
   }) => _MediaThumb._(
     isVideo: file.isVideo,
     onRemove: onRemove,
+    onTap: onTap,
     child: file.isVideo
         ? const ColoredBox(color: AppColors.bgSolid)
-        : CachedNetworkImage(imageUrl: file.url, fit: BoxFit.cover),
+        : CachedNetworkImage(
+            imageUrl: file.url,
+            fit: BoxFit.cover,
+            placeholder: (_, _) => const ThumbShimmer(),
+            errorWidget: (_, _, _) => const ThumbError(),
+          ),
   );
 
-  factory _MediaThumb.picked(_Picked file, {required VoidCallback onRemove}) =>
-      _MediaThumb._(
-        isVideo: file.kind == _Kind.video,
-        onRemove: onRemove,
-        child: file.kind == _Kind.video
-            ? const ColoredBox(color: AppColors.bgSolid)
-            : Image.file(File(file.path), fit: BoxFit.cover),
-      );
+  factory _MediaThumb.picked(
+    _Picked file, {
+    required VoidCallback onRemove,
+    VoidCallback? onTap,
+  }) => _MediaThumb._(
+    isVideo: file.kind == _Kind.video,
+    onRemove: onRemove,
+    onTap: onTap,
+    child: file.kind == _Kind.video
+        ? const ColoredBox(color: AppColors.bgSolid)
+        : Image.file(File(file.path), fit: BoxFit.cover),
+  );
 
   factory _MediaThumb.view(AuditFile file, {required VoidCallback onTap}) =>
       _MediaThumb._(
@@ -599,7 +652,12 @@ class _MediaThumb extends StatelessWidget {
         onTap: onTap,
         child: file.isVideo
             ? const ColoredBox(color: AppColors.bgSolid)
-            : CachedNetworkImage(imageUrl: file.url, fit: BoxFit.cover),
+            : CachedNetworkImage(
+                imageUrl: file.url,
+                fit: BoxFit.cover,
+                placeholder: (_, _) => const ThumbShimmer(),
+                errorWidget: (_, _, _) => const ThumbError(),
+              ),
       );
 
   final Widget child;
