@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:amanah/core/network/api_exception.dart';
 import 'package:amanah/core/theme/app_colors.dart';
 import 'package:amanah/core/theme/app_spacing.dart';
@@ -490,7 +492,7 @@ class _BodyState extends ConsumerState<_Body> {
             Padding(
               padding: EdgeInsets.only(
                 top: AppSpacing.s2,
-                bottom: bottomInset,
+                bottom: bottomInset + (Platform.isAndroid ? AppSpacing.s4 : 0),
               ),
               child: AppButton(
                 label: 'Complete Audit',

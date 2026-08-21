@@ -214,6 +214,10 @@ class _EnterSubmissionSheetState extends ConsumerState<_EnterSubmissionSheet> {
   @override
   Widget build(BuildContext context) {
     final keyboard = MediaQuery.of(context).viewInsets.bottom;
+    // showModalBottomSheet's useSafeArea only guards the top (SafeArea
+    // bottom:false), so pad the CTA past the bottom system inset (Android nav
+    // bar). Zero on gesture nav / iOS, keeping the original spacing there.
+    final bottomInset = MediaQuery.viewPaddingOf(context).bottom;
     final isView = _mode == _Mode.view;
 
     return Padding(
@@ -238,11 +242,11 @@ class _EnterSubmissionSheetState extends ConsumerState<_EnterSubmissionSheet> {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.fromLTRB(
+              padding: EdgeInsets.fromLTRB(
                 AppSpacing.s4,
                 AppSpacing.s2,
                 AppSpacing.s4,
-                AppSpacing.s6,
+                bottomInset + (Platform.isAndroid ? AppSpacing.s4 : 0),
               ),
               child: isView
                   // View mode: "Submit again" activates the editable form.
