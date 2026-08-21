@@ -147,7 +147,9 @@ class MockAuditRepository implements AuditRepository {
       title: base.title,
       status: base.section.name,
       auditType: base.auditType,
-      categoryName: base.categoryName,
+      category: base.categoryName == null
+          ? null
+          : AuditCategoryInfo(id: 0, name: base.categoryName!),
       client: base.client,
       location: base.location,
       eventDate: base.eventDate,

@@ -341,15 +341,15 @@ class _EnterSubmissionSheetState extends ConsumerState<_EnterSubmissionSheet> {
           fillColor: AppColors.bgDefault,
           contentPadding: const EdgeInsets.all(AppSpacing.s3),
           border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(AppRadius.md),
+            borderRadius: BorderRadius.circular(AppRadius.sm),
             borderSide: BorderSide(color: AppColors.borderDefault),
           ),
           enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(AppRadius.md),
+            borderRadius: BorderRadius.circular(AppRadius.sm),
             borderSide: BorderSide(color: AppColors.borderDefault),
           ),
           focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(AppRadius.md),
+            borderRadius: BorderRadius.circular(AppRadius.sm),
             borderSide: const BorderSide(color: AppColors.borderFocus),
           ),
         ),
@@ -386,7 +386,7 @@ class _EnterSubmissionSheetState extends ConsumerState<_EnterSubmissionSheet> {
         const SizedBox(height: AppSpacing.s1),
         Text(
           _dateFmt.format(o.submittedAt!.toLocal()),
-          style: AppText.bodyLRegular,
+          style: AppText.bodyMMedium,
         ),
       ],
       if (o.submittedBy != null) ...[
@@ -424,7 +424,15 @@ class _EnterSubmissionSheetState extends ConsumerState<_EnterSubmissionSheet> {
         const SizedBox(height: AppSpacing.s5),
         const _Label('Note'),
         const SizedBox(height: AppSpacing.s2),
-        Text(note, style: AppText.bodyLRegular),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(AppSpacing.s3),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(AppRadius.sm),
+            border: Border.all(color: AppColors.borderDefault),
+          ),
+          child: Text(note, style: AppText.bodyMRegular),
+        ),
       ],
     ];
   }
@@ -526,7 +534,7 @@ class _AddTile extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: AppSpacing.s4),
         decoration: BoxDecoration(
           color: AppColors.bgHovered,
-          borderRadius: BorderRadius.circular(AppRadius.md),
+          borderRadius: BorderRadius.circular(AppRadius.sm),
           border: Border.all(color: AppColors.borderBold),
         ),
         child: Column(
@@ -676,7 +684,7 @@ class _DocRow extends StatelessWidget {
         vertical: AppSpacing.s3,
       ),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(AppRadius.md),
+        borderRadius: BorderRadius.circular(AppRadius.sm),
         border: Border.all(color: AppColors.borderDefault),
       ),
       child: Row(

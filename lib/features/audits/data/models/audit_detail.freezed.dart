@@ -16,7 +16,7 @@ T _$identity<T>(T value) => value;
 mixin _$AuditDetail {
 
  int get id; String get title;/// Section value: `running` / `upcoming` / `completed`.
- String? get status;@JsonKey(name: 'audit_type') String? get auditType;@JsonKey(name: 'category_name') String? get categoryName; AuditClient? get client; String? get location;@JsonKey(name: 'event_date') DateTime? get eventDate;@JsonKey(name: 'start_time') String? get startTime;@JsonKey(name: 'end_time') String? get endTime;@JsonKey(name: 'is_completed') bool get isCompleted;@JsonKey(name: 'observations_total') int get observationsTotal;@JsonKey(name: 'observations_completed') int get observationsCompleted;@JsonKey(name: 'progress_percent') int get progressPercent; AuditPermissions? get permissions;@JsonKey(name: 'audit_categories') List<AuditCategory> get auditCategories;
+ String? get status;@JsonKey(name: 'audit_type') String? get auditType; AuditCategoryInfo? get category; AuditClient? get client; String? get location;@JsonKey(name: 'event_date') DateTime? get eventDate;@JsonKey(name: 'start_time') String? get startTime;@JsonKey(name: 'end_time') String? get endTime;@JsonKey(name: 'is_completed') bool get isCompleted;@JsonKey(name: 'observations_total') int get observationsTotal;@JsonKey(name: 'observations_completed') int get observationsCompleted;@JsonKey(name: 'progress_percent') int get progressPercent; AuditPermissions? get permissions;@JsonKey(name: 'audit_categories') List<AuditCategory> get auditCategories;
 /// Create a copy of AuditDetail
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -29,16 +29,16 @@ $AuditDetailCopyWith<AuditDetail> get copyWith => _$AuditDetailCopyWithImpl<Audi
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is AuditDetail&&(identical(other.id, id) || other.id == id)&&(identical(other.title, title) || other.title == title)&&(identical(other.status, status) || other.status == status)&&(identical(other.auditType, auditType) || other.auditType == auditType)&&(identical(other.categoryName, categoryName) || other.categoryName == categoryName)&&(identical(other.client, client) || other.client == client)&&(identical(other.location, location) || other.location == location)&&(identical(other.eventDate, eventDate) || other.eventDate == eventDate)&&(identical(other.startTime, startTime) || other.startTime == startTime)&&(identical(other.endTime, endTime) || other.endTime == endTime)&&(identical(other.isCompleted, isCompleted) || other.isCompleted == isCompleted)&&(identical(other.observationsTotal, observationsTotal) || other.observationsTotal == observationsTotal)&&(identical(other.observationsCompleted, observationsCompleted) || other.observationsCompleted == observationsCompleted)&&(identical(other.progressPercent, progressPercent) || other.progressPercent == progressPercent)&&(identical(other.permissions, permissions) || other.permissions == permissions)&&const DeepCollectionEquality().equals(other.auditCategories, auditCategories));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is AuditDetail&&(identical(other.id, id) || other.id == id)&&(identical(other.title, title) || other.title == title)&&(identical(other.status, status) || other.status == status)&&(identical(other.auditType, auditType) || other.auditType == auditType)&&(identical(other.category, category) || other.category == category)&&(identical(other.client, client) || other.client == client)&&(identical(other.location, location) || other.location == location)&&(identical(other.eventDate, eventDate) || other.eventDate == eventDate)&&(identical(other.startTime, startTime) || other.startTime == startTime)&&(identical(other.endTime, endTime) || other.endTime == endTime)&&(identical(other.isCompleted, isCompleted) || other.isCompleted == isCompleted)&&(identical(other.observationsTotal, observationsTotal) || other.observationsTotal == observationsTotal)&&(identical(other.observationsCompleted, observationsCompleted) || other.observationsCompleted == observationsCompleted)&&(identical(other.progressPercent, progressPercent) || other.progressPercent == progressPercent)&&(identical(other.permissions, permissions) || other.permissions == permissions)&&const DeepCollectionEquality().equals(other.auditCategories, auditCategories));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,title,status,auditType,categoryName,client,location,eventDate,startTime,endTime,isCompleted,observationsTotal,observationsCompleted,progressPercent,permissions,const DeepCollectionEquality().hash(auditCategories));
+int get hashCode => Object.hash(runtimeType,id,title,status,auditType,category,client,location,eventDate,startTime,endTime,isCompleted,observationsTotal,observationsCompleted,progressPercent,permissions,const DeepCollectionEquality().hash(auditCategories));
 
 @override
 String toString() {
-  return 'AuditDetail(id: $id, title: $title, status: $status, auditType: $auditType, categoryName: $categoryName, client: $client, location: $location, eventDate: $eventDate, startTime: $startTime, endTime: $endTime, isCompleted: $isCompleted, observationsTotal: $observationsTotal, observationsCompleted: $observationsCompleted, progressPercent: $progressPercent, permissions: $permissions, auditCategories: $auditCategories)';
+  return 'AuditDetail(id: $id, title: $title, status: $status, auditType: $auditType, category: $category, client: $client, location: $location, eventDate: $eventDate, startTime: $startTime, endTime: $endTime, isCompleted: $isCompleted, observationsTotal: $observationsTotal, observationsCompleted: $observationsCompleted, progressPercent: $progressPercent, permissions: $permissions, auditCategories: $auditCategories)';
 }
 
 
@@ -49,11 +49,11 @@ abstract mixin class $AuditDetailCopyWith<$Res>  {
   factory $AuditDetailCopyWith(AuditDetail value, $Res Function(AuditDetail) _then) = _$AuditDetailCopyWithImpl;
 @useResult
 $Res call({
- int id, String title, String? status,@JsonKey(name: 'audit_type') String? auditType,@JsonKey(name: 'category_name') String? categoryName, AuditClient? client, String? location,@JsonKey(name: 'event_date') DateTime? eventDate,@JsonKey(name: 'start_time') String? startTime,@JsonKey(name: 'end_time') String? endTime,@JsonKey(name: 'is_completed') bool isCompleted,@JsonKey(name: 'observations_total') int observationsTotal,@JsonKey(name: 'observations_completed') int observationsCompleted,@JsonKey(name: 'progress_percent') int progressPercent, AuditPermissions? permissions,@JsonKey(name: 'audit_categories') List<AuditCategory> auditCategories
+ int id, String title, String? status,@JsonKey(name: 'audit_type') String? auditType, AuditCategoryInfo? category, AuditClient? client, String? location,@JsonKey(name: 'event_date') DateTime? eventDate,@JsonKey(name: 'start_time') String? startTime,@JsonKey(name: 'end_time') String? endTime,@JsonKey(name: 'is_completed') bool isCompleted,@JsonKey(name: 'observations_total') int observationsTotal,@JsonKey(name: 'observations_completed') int observationsCompleted,@JsonKey(name: 'progress_percent') int progressPercent, AuditPermissions? permissions,@JsonKey(name: 'audit_categories') List<AuditCategory> auditCategories
 });
 
 
-$AuditClientCopyWith<$Res>? get client;$AuditPermissionsCopyWith<$Res>? get permissions;
+$AuditCategoryInfoCopyWith<$Res>? get category;$AuditClientCopyWith<$Res>? get client;$AuditPermissionsCopyWith<$Res>? get permissions;
 
 }
 /// @nodoc
@@ -66,14 +66,14 @@ class _$AuditDetailCopyWithImpl<$Res>
 
 /// Create a copy of AuditDetail
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? title = null,Object? status = freezed,Object? auditType = freezed,Object? categoryName = freezed,Object? client = freezed,Object? location = freezed,Object? eventDate = freezed,Object? startTime = freezed,Object? endTime = freezed,Object? isCompleted = null,Object? observationsTotal = null,Object? observationsCompleted = null,Object? progressPercent = null,Object? permissions = freezed,Object? auditCategories = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? title = null,Object? status = freezed,Object? auditType = freezed,Object? category = freezed,Object? client = freezed,Object? location = freezed,Object? eventDate = freezed,Object? startTime = freezed,Object? endTime = freezed,Object? isCompleted = null,Object? observationsTotal = null,Object? observationsCompleted = null,Object? progressPercent = null,Object? permissions = freezed,Object? auditCategories = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,title: null == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
 as String,status: freezed == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
 as String?,auditType: freezed == auditType ? _self.auditType : auditType // ignore: cast_nullable_to_non_nullable
-as String?,categoryName: freezed == categoryName ? _self.categoryName : categoryName // ignore: cast_nullable_to_non_nullable
-as String?,client: freezed == client ? _self.client : client // ignore: cast_nullable_to_non_nullable
+as String?,category: freezed == category ? _self.category : category // ignore: cast_nullable_to_non_nullable
+as AuditCategoryInfo?,client: freezed == client ? _self.client : client // ignore: cast_nullable_to_non_nullable
 as AuditClient?,location: freezed == location ? _self.location : location // ignore: cast_nullable_to_non_nullable
 as String?,eventDate: freezed == eventDate ? _self.eventDate : eventDate // ignore: cast_nullable_to_non_nullable
 as DateTime?,startTime: freezed == startTime ? _self.startTime : startTime // ignore: cast_nullable_to_non_nullable
@@ -88,6 +88,18 @@ as List<AuditCategory>,
   ));
 }
 /// Create a copy of AuditDetail
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$AuditCategoryInfoCopyWith<$Res>? get category {
+    if (_self.category == null) {
+    return null;
+  }
+
+  return $AuditCategoryInfoCopyWith<$Res>(_self.category!, (value) {
+    return _then(_self.copyWith(category: value));
+  });
+}/// Create a copy of AuditDetail
 /// with the given fields replaced by the non-null parameter values.
 @override
 @pragma('vm:prefer-inline')
@@ -190,10 +202,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String title,  String? status, @JsonKey(name: 'audit_type')  String? auditType, @JsonKey(name: 'category_name')  String? categoryName,  AuditClient? client,  String? location, @JsonKey(name: 'event_date')  DateTime? eventDate, @JsonKey(name: 'start_time')  String? startTime, @JsonKey(name: 'end_time')  String? endTime, @JsonKey(name: 'is_completed')  bool isCompleted, @JsonKey(name: 'observations_total')  int observationsTotal, @JsonKey(name: 'observations_completed')  int observationsCompleted, @JsonKey(name: 'progress_percent')  int progressPercent,  AuditPermissions? permissions, @JsonKey(name: 'audit_categories')  List<AuditCategory> auditCategories)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String title,  String? status, @JsonKey(name: 'audit_type')  String? auditType,  AuditCategoryInfo? category,  AuditClient? client,  String? location, @JsonKey(name: 'event_date')  DateTime? eventDate, @JsonKey(name: 'start_time')  String? startTime, @JsonKey(name: 'end_time')  String? endTime, @JsonKey(name: 'is_completed')  bool isCompleted, @JsonKey(name: 'observations_total')  int observationsTotal, @JsonKey(name: 'observations_completed')  int observationsCompleted, @JsonKey(name: 'progress_percent')  int progressPercent,  AuditPermissions? permissions, @JsonKey(name: 'audit_categories')  List<AuditCategory> auditCategories)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _AuditDetail() when $default != null:
-return $default(_that.id,_that.title,_that.status,_that.auditType,_that.categoryName,_that.client,_that.location,_that.eventDate,_that.startTime,_that.endTime,_that.isCompleted,_that.observationsTotal,_that.observationsCompleted,_that.progressPercent,_that.permissions,_that.auditCategories);case _:
+return $default(_that.id,_that.title,_that.status,_that.auditType,_that.category,_that.client,_that.location,_that.eventDate,_that.startTime,_that.endTime,_that.isCompleted,_that.observationsTotal,_that.observationsCompleted,_that.progressPercent,_that.permissions,_that.auditCategories);case _:
   return orElse();
 
 }
@@ -211,10 +223,10 @@ return $default(_that.id,_that.title,_that.status,_that.auditType,_that.category
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String title,  String? status, @JsonKey(name: 'audit_type')  String? auditType, @JsonKey(name: 'category_name')  String? categoryName,  AuditClient? client,  String? location, @JsonKey(name: 'event_date')  DateTime? eventDate, @JsonKey(name: 'start_time')  String? startTime, @JsonKey(name: 'end_time')  String? endTime, @JsonKey(name: 'is_completed')  bool isCompleted, @JsonKey(name: 'observations_total')  int observationsTotal, @JsonKey(name: 'observations_completed')  int observationsCompleted, @JsonKey(name: 'progress_percent')  int progressPercent,  AuditPermissions? permissions, @JsonKey(name: 'audit_categories')  List<AuditCategory> auditCategories)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String title,  String? status, @JsonKey(name: 'audit_type')  String? auditType,  AuditCategoryInfo? category,  AuditClient? client,  String? location, @JsonKey(name: 'event_date')  DateTime? eventDate, @JsonKey(name: 'start_time')  String? startTime, @JsonKey(name: 'end_time')  String? endTime, @JsonKey(name: 'is_completed')  bool isCompleted, @JsonKey(name: 'observations_total')  int observationsTotal, @JsonKey(name: 'observations_completed')  int observationsCompleted, @JsonKey(name: 'progress_percent')  int progressPercent,  AuditPermissions? permissions, @JsonKey(name: 'audit_categories')  List<AuditCategory> auditCategories)  $default,) {final _that = this;
 switch (_that) {
 case _AuditDetail():
-return $default(_that.id,_that.title,_that.status,_that.auditType,_that.categoryName,_that.client,_that.location,_that.eventDate,_that.startTime,_that.endTime,_that.isCompleted,_that.observationsTotal,_that.observationsCompleted,_that.progressPercent,_that.permissions,_that.auditCategories);}
+return $default(_that.id,_that.title,_that.status,_that.auditType,_that.category,_that.client,_that.location,_that.eventDate,_that.startTime,_that.endTime,_that.isCompleted,_that.observationsTotal,_that.observationsCompleted,_that.progressPercent,_that.permissions,_that.auditCategories);}
 }
 /// A variant of `when` that fallback to returning `null`
 ///
@@ -228,10 +240,10 @@ return $default(_that.id,_that.title,_that.status,_that.auditType,_that.category
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String title,  String? status, @JsonKey(name: 'audit_type')  String? auditType, @JsonKey(name: 'category_name')  String? categoryName,  AuditClient? client,  String? location, @JsonKey(name: 'event_date')  DateTime? eventDate, @JsonKey(name: 'start_time')  String? startTime, @JsonKey(name: 'end_time')  String? endTime, @JsonKey(name: 'is_completed')  bool isCompleted, @JsonKey(name: 'observations_total')  int observationsTotal, @JsonKey(name: 'observations_completed')  int observationsCompleted, @JsonKey(name: 'progress_percent')  int progressPercent,  AuditPermissions? permissions, @JsonKey(name: 'audit_categories')  List<AuditCategory> auditCategories)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String title,  String? status, @JsonKey(name: 'audit_type')  String? auditType,  AuditCategoryInfo? category,  AuditClient? client,  String? location, @JsonKey(name: 'event_date')  DateTime? eventDate, @JsonKey(name: 'start_time')  String? startTime, @JsonKey(name: 'end_time')  String? endTime, @JsonKey(name: 'is_completed')  bool isCompleted, @JsonKey(name: 'observations_total')  int observationsTotal, @JsonKey(name: 'observations_completed')  int observationsCompleted, @JsonKey(name: 'progress_percent')  int progressPercent,  AuditPermissions? permissions, @JsonKey(name: 'audit_categories')  List<AuditCategory> auditCategories)?  $default,) {final _that = this;
 switch (_that) {
 case _AuditDetail() when $default != null:
-return $default(_that.id,_that.title,_that.status,_that.auditType,_that.categoryName,_that.client,_that.location,_that.eventDate,_that.startTime,_that.endTime,_that.isCompleted,_that.observationsTotal,_that.observationsCompleted,_that.progressPercent,_that.permissions,_that.auditCategories);case _:
+return $default(_that.id,_that.title,_that.status,_that.auditType,_that.category,_that.client,_that.location,_that.eventDate,_that.startTime,_that.endTime,_that.isCompleted,_that.observationsTotal,_that.observationsCompleted,_that.progressPercent,_that.permissions,_that.auditCategories);case _:
   return null;
 
 }
@@ -243,7 +255,7 @@ return $default(_that.id,_that.title,_that.status,_that.auditType,_that.category
 @JsonSerializable()
 
 class _AuditDetail extends AuditDetail {
-  const _AuditDetail({required this.id, required this.title, this.status, @JsonKey(name: 'audit_type') this.auditType, @JsonKey(name: 'category_name') this.categoryName, this.client, this.location, @JsonKey(name: 'event_date') this.eventDate, @JsonKey(name: 'start_time') this.startTime, @JsonKey(name: 'end_time') this.endTime, @JsonKey(name: 'is_completed') this.isCompleted = false, @JsonKey(name: 'observations_total') this.observationsTotal = 0, @JsonKey(name: 'observations_completed') this.observationsCompleted = 0, @JsonKey(name: 'progress_percent') this.progressPercent = 0, this.permissions, @JsonKey(name: 'audit_categories') final  List<AuditCategory> auditCategories = const <AuditCategory>[]}): _auditCategories = auditCategories,super._();
+  const _AuditDetail({required this.id, required this.title, this.status, @JsonKey(name: 'audit_type') this.auditType, this.category, this.client, this.location, @JsonKey(name: 'event_date') this.eventDate, @JsonKey(name: 'start_time') this.startTime, @JsonKey(name: 'end_time') this.endTime, @JsonKey(name: 'is_completed') this.isCompleted = false, @JsonKey(name: 'observations_total') this.observationsTotal = 0, @JsonKey(name: 'observations_completed') this.observationsCompleted = 0, @JsonKey(name: 'progress_percent') this.progressPercent = 0, this.permissions, @JsonKey(name: 'audit_categories') final  List<AuditCategory> auditCategories = const <AuditCategory>[]}): _auditCategories = auditCategories,super._();
   factory _AuditDetail.fromJson(Map<String, dynamic> json) => _$AuditDetailFromJson(json);
 
 @override final  int id;
@@ -251,7 +263,7 @@ class _AuditDetail extends AuditDetail {
 /// Section value: `running` / `upcoming` / `completed`.
 @override final  String? status;
 @override@JsonKey(name: 'audit_type') final  String? auditType;
-@override@JsonKey(name: 'category_name') final  String? categoryName;
+@override final  AuditCategoryInfo? category;
 @override final  AuditClient? client;
 @override final  String? location;
 @override@JsonKey(name: 'event_date') final  DateTime? eventDate;
@@ -283,16 +295,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AuditDetail&&(identical(other.id, id) || other.id == id)&&(identical(other.title, title) || other.title == title)&&(identical(other.status, status) || other.status == status)&&(identical(other.auditType, auditType) || other.auditType == auditType)&&(identical(other.categoryName, categoryName) || other.categoryName == categoryName)&&(identical(other.client, client) || other.client == client)&&(identical(other.location, location) || other.location == location)&&(identical(other.eventDate, eventDate) || other.eventDate == eventDate)&&(identical(other.startTime, startTime) || other.startTime == startTime)&&(identical(other.endTime, endTime) || other.endTime == endTime)&&(identical(other.isCompleted, isCompleted) || other.isCompleted == isCompleted)&&(identical(other.observationsTotal, observationsTotal) || other.observationsTotal == observationsTotal)&&(identical(other.observationsCompleted, observationsCompleted) || other.observationsCompleted == observationsCompleted)&&(identical(other.progressPercent, progressPercent) || other.progressPercent == progressPercent)&&(identical(other.permissions, permissions) || other.permissions == permissions)&&const DeepCollectionEquality().equals(other._auditCategories, _auditCategories));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AuditDetail&&(identical(other.id, id) || other.id == id)&&(identical(other.title, title) || other.title == title)&&(identical(other.status, status) || other.status == status)&&(identical(other.auditType, auditType) || other.auditType == auditType)&&(identical(other.category, category) || other.category == category)&&(identical(other.client, client) || other.client == client)&&(identical(other.location, location) || other.location == location)&&(identical(other.eventDate, eventDate) || other.eventDate == eventDate)&&(identical(other.startTime, startTime) || other.startTime == startTime)&&(identical(other.endTime, endTime) || other.endTime == endTime)&&(identical(other.isCompleted, isCompleted) || other.isCompleted == isCompleted)&&(identical(other.observationsTotal, observationsTotal) || other.observationsTotal == observationsTotal)&&(identical(other.observationsCompleted, observationsCompleted) || other.observationsCompleted == observationsCompleted)&&(identical(other.progressPercent, progressPercent) || other.progressPercent == progressPercent)&&(identical(other.permissions, permissions) || other.permissions == permissions)&&const DeepCollectionEquality().equals(other._auditCategories, _auditCategories));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,title,status,auditType,categoryName,client,location,eventDate,startTime,endTime,isCompleted,observationsTotal,observationsCompleted,progressPercent,permissions,const DeepCollectionEquality().hash(_auditCategories));
+int get hashCode => Object.hash(runtimeType,id,title,status,auditType,category,client,location,eventDate,startTime,endTime,isCompleted,observationsTotal,observationsCompleted,progressPercent,permissions,const DeepCollectionEquality().hash(_auditCategories));
 
 @override
 String toString() {
-  return 'AuditDetail(id: $id, title: $title, status: $status, auditType: $auditType, categoryName: $categoryName, client: $client, location: $location, eventDate: $eventDate, startTime: $startTime, endTime: $endTime, isCompleted: $isCompleted, observationsTotal: $observationsTotal, observationsCompleted: $observationsCompleted, progressPercent: $progressPercent, permissions: $permissions, auditCategories: $auditCategories)';
+  return 'AuditDetail(id: $id, title: $title, status: $status, auditType: $auditType, category: $category, client: $client, location: $location, eventDate: $eventDate, startTime: $startTime, endTime: $endTime, isCompleted: $isCompleted, observationsTotal: $observationsTotal, observationsCompleted: $observationsCompleted, progressPercent: $progressPercent, permissions: $permissions, auditCategories: $auditCategories)';
 }
 
 
@@ -303,11 +315,11 @@ abstract mixin class _$AuditDetailCopyWith<$Res> implements $AuditDetailCopyWith
   factory _$AuditDetailCopyWith(_AuditDetail value, $Res Function(_AuditDetail) _then) = __$AuditDetailCopyWithImpl;
 @override @useResult
 $Res call({
- int id, String title, String? status,@JsonKey(name: 'audit_type') String? auditType,@JsonKey(name: 'category_name') String? categoryName, AuditClient? client, String? location,@JsonKey(name: 'event_date') DateTime? eventDate,@JsonKey(name: 'start_time') String? startTime,@JsonKey(name: 'end_time') String? endTime,@JsonKey(name: 'is_completed') bool isCompleted,@JsonKey(name: 'observations_total') int observationsTotal,@JsonKey(name: 'observations_completed') int observationsCompleted,@JsonKey(name: 'progress_percent') int progressPercent, AuditPermissions? permissions,@JsonKey(name: 'audit_categories') List<AuditCategory> auditCategories
+ int id, String title, String? status,@JsonKey(name: 'audit_type') String? auditType, AuditCategoryInfo? category, AuditClient? client, String? location,@JsonKey(name: 'event_date') DateTime? eventDate,@JsonKey(name: 'start_time') String? startTime,@JsonKey(name: 'end_time') String? endTime,@JsonKey(name: 'is_completed') bool isCompleted,@JsonKey(name: 'observations_total') int observationsTotal,@JsonKey(name: 'observations_completed') int observationsCompleted,@JsonKey(name: 'progress_percent') int progressPercent, AuditPermissions? permissions,@JsonKey(name: 'audit_categories') List<AuditCategory> auditCategories
 });
 
 
-@override $AuditClientCopyWith<$Res>? get client;@override $AuditPermissionsCopyWith<$Res>? get permissions;
+@override $AuditCategoryInfoCopyWith<$Res>? get category;@override $AuditClientCopyWith<$Res>? get client;@override $AuditPermissionsCopyWith<$Res>? get permissions;
 
 }
 /// @nodoc
@@ -320,14 +332,14 @@ class __$AuditDetailCopyWithImpl<$Res>
 
 /// Create a copy of AuditDetail
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? title = null,Object? status = freezed,Object? auditType = freezed,Object? categoryName = freezed,Object? client = freezed,Object? location = freezed,Object? eventDate = freezed,Object? startTime = freezed,Object? endTime = freezed,Object? isCompleted = null,Object? observationsTotal = null,Object? observationsCompleted = null,Object? progressPercent = null,Object? permissions = freezed,Object? auditCategories = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? title = null,Object? status = freezed,Object? auditType = freezed,Object? category = freezed,Object? client = freezed,Object? location = freezed,Object? eventDate = freezed,Object? startTime = freezed,Object? endTime = freezed,Object? isCompleted = null,Object? observationsTotal = null,Object? observationsCompleted = null,Object? progressPercent = null,Object? permissions = freezed,Object? auditCategories = null,}) {
   return _then(_AuditDetail(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,title: null == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
 as String,status: freezed == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
 as String?,auditType: freezed == auditType ? _self.auditType : auditType // ignore: cast_nullable_to_non_nullable
-as String?,categoryName: freezed == categoryName ? _self.categoryName : categoryName // ignore: cast_nullable_to_non_nullable
-as String?,client: freezed == client ? _self.client : client // ignore: cast_nullable_to_non_nullable
+as String?,category: freezed == category ? _self.category : category // ignore: cast_nullable_to_non_nullable
+as AuditCategoryInfo?,client: freezed == client ? _self.client : client // ignore: cast_nullable_to_non_nullable
 as AuditClient?,location: freezed == location ? _self.location : location // ignore: cast_nullable_to_non_nullable
 as String?,eventDate: freezed == eventDate ? _self.eventDate : eventDate // ignore: cast_nullable_to_non_nullable
 as DateTime?,startTime: freezed == startTime ? _self.startTime : startTime // ignore: cast_nullable_to_non_nullable
@@ -343,6 +355,18 @@ as List<AuditCategory>,
 }
 
 /// Create a copy of AuditDetail
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$AuditCategoryInfoCopyWith<$Res>? get category {
+    if (_self.category == null) {
+    return null;
+  }
+
+  return $AuditCategoryInfoCopyWith<$Res>(_self.category!, (value) {
+    return _then(_self.copyWith(category: value));
+  });
+}/// Create a copy of AuditDetail
 /// with the given fields replaced by the non-null parameter values.
 @override
 @pragma('vm:prefer-inline')
@@ -367,6 +391,266 @@ $AuditPermissionsCopyWith<$Res>? get permissions {
     return _then(_self.copyWith(permissions: value));
   });
 }
+}
+
+
+/// @nodoc
+mixin _$AuditCategoryInfo {
+
+ int get id; String get name;
+/// Create a copy of AuditCategoryInfo
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$AuditCategoryInfoCopyWith<AuditCategoryInfo> get copyWith => _$AuditCategoryInfoCopyWithImpl<AuditCategoryInfo>(this as AuditCategoryInfo, _$identity);
+
+  /// Serializes this AuditCategoryInfo to a JSON map.
+  Map<String, dynamic> toJson();
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is AuditCategoryInfo&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,id,name);
+
+@override
+String toString() {
+  return 'AuditCategoryInfo(id: $id, name: $name)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $AuditCategoryInfoCopyWith<$Res>  {
+  factory $AuditCategoryInfoCopyWith(AuditCategoryInfo value, $Res Function(AuditCategoryInfo) _then) = _$AuditCategoryInfoCopyWithImpl;
+@useResult
+$Res call({
+ int id, String name
+});
+
+
+
+
+}
+/// @nodoc
+class _$AuditCategoryInfoCopyWithImpl<$Res>
+    implements $AuditCategoryInfoCopyWith<$Res> {
+  _$AuditCategoryInfoCopyWithImpl(this._self, this._then);
+
+  final AuditCategoryInfo _self;
+  final $Res Function(AuditCategoryInfo) _then;
+
+/// Create a copy of AuditCategoryInfo
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,}) {
+  return _then(_self.copyWith(
+id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
+as int,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
+as String,
+  ));
+}
+
+}
+
+
+/// Adds pattern-matching-related methods to [AuditCategoryInfo].
+extension AuditCategoryInfoPatterns on AuditCategoryInfo {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _AuditCategoryInfo value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _AuditCategoryInfo() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _AuditCategoryInfo value)  $default,){
+final _that = this;
+switch (_that) {
+case _AuditCategoryInfo():
+return $default(_that);}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _AuditCategoryInfo value)?  $default,){
+final _that = this;
+switch (_that) {
+case _AuditCategoryInfo() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String name)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _AuditCategoryInfo() when $default != null:
+return $default(_that.id,_that.name);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String name)  $default,) {final _that = this;
+switch (_that) {
+case _AuditCategoryInfo():
+return $default(_that.id,_that.name);}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String name)?  $default,) {final _that = this;
+switch (_that) {
+case _AuditCategoryInfo() when $default != null:
+return $default(_that.id,_that.name);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+@JsonSerializable()
+
+class _AuditCategoryInfo implements AuditCategoryInfo {
+  const _AuditCategoryInfo({required this.id, required this.name});
+  factory _AuditCategoryInfo.fromJson(Map<String, dynamic> json) => _$AuditCategoryInfoFromJson(json);
+
+@override final  int id;
+@override final  String name;
+
+/// Create a copy of AuditCategoryInfo
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$AuditCategoryInfoCopyWith<_AuditCategoryInfo> get copyWith => __$AuditCategoryInfoCopyWithImpl<_AuditCategoryInfo>(this, _$identity);
+
+@override
+Map<String, dynamic> toJson() {
+  return _$AuditCategoryInfoToJson(this, );
+}
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AuditCategoryInfo&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,id,name);
+
+@override
+String toString() {
+  return 'AuditCategoryInfo(id: $id, name: $name)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$AuditCategoryInfoCopyWith<$Res> implements $AuditCategoryInfoCopyWith<$Res> {
+  factory _$AuditCategoryInfoCopyWith(_AuditCategoryInfo value, $Res Function(_AuditCategoryInfo) _then) = __$AuditCategoryInfoCopyWithImpl;
+@override @useResult
+$Res call({
+ int id, String name
+});
+
+
+
+
+}
+/// @nodoc
+class __$AuditCategoryInfoCopyWithImpl<$Res>
+    implements _$AuditCategoryInfoCopyWith<$Res> {
+  __$AuditCategoryInfoCopyWithImpl(this._self, this._then);
+
+  final _AuditCategoryInfo _self;
+  final $Res Function(_AuditCategoryInfo) _then;
+
+/// Create a copy of AuditCategoryInfo
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,}) {
+  return _then(_AuditCategoryInfo(
+id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
+as int,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
+as String,
+  ));
+}
+
+
 }
 
 

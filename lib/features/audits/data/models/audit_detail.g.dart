@@ -11,7 +11,9 @@ _AuditDetail _$AuditDetailFromJson(Map<String, dynamic> json) => _AuditDetail(
   title: json['title'] as String,
   status: json['status'] as String?,
   auditType: json['audit_type'] as String?,
-  categoryName: json['category_name'] as String?,
+  category: json['category'] == null
+      ? null
+      : AuditCategoryInfo.fromJson(json['category'] as Map<String, dynamic>),
   client: json['client'] == null
       ? null
       : AuditClient.fromJson(json['client'] as Map<String, dynamic>),
@@ -41,7 +43,7 @@ Map<String, dynamic> _$AuditDetailToJson(_AuditDetail instance) =>
       'title': instance.title,
       'status': instance.status,
       'audit_type': instance.auditType,
-      'category_name': instance.categoryName,
+      'category': instance.category,
       'client': instance.client,
       'location': instance.location,
       'event_date': instance.eventDate?.toIso8601String(),
@@ -54,6 +56,15 @@ Map<String, dynamic> _$AuditDetailToJson(_AuditDetail instance) =>
       'permissions': instance.permissions,
       'audit_categories': instance.auditCategories,
     };
+
+_AuditCategoryInfo _$AuditCategoryInfoFromJson(Map<String, dynamic> json) =>
+    _AuditCategoryInfo(
+      id: (json['id'] as num).toInt(),
+      name: json['name'] as String,
+    );
+
+Map<String, dynamic> _$AuditCategoryInfoToJson(_AuditCategoryInfo instance) =>
+    <String, dynamic>{'id': instance.id, 'name': instance.name};
 
 _AuditPermissions _$AuditPermissionsFromJson(Map<String, dynamic> json) =>
     _AuditPermissions(

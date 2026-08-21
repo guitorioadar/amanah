@@ -49,7 +49,7 @@ sealed class AuditDetail with _$AuditDetail {
     /// Section value: `running` / `upcoming` / `completed`.
     String? status,
     @JsonKey(name: 'audit_type') String? auditType,
-    @JsonKey(name: 'category_name') String? categoryName,
+    AuditCategoryInfo? category,
     AuditClient? client,
     String? location,
     @JsonKey(name: 'event_date') DateTime? eventDate,
@@ -73,6 +73,21 @@ sealed class AuditDetail with _$AuditDetail {
 
   /// The card/header status chip section, derived from [status].
   AuditSection get section => AuditSection.fromStatus(status);
+
+  /// Category tag label (nested `category.name`).
+  String? get categoryName => category?.name;
+}
+
+/// Nested `category` object on the audit detail.
+@freezed
+sealed class AuditCategoryInfo with _$AuditCategoryInfo {
+  const factory AuditCategoryInfo({
+    required int id,
+    required String name,
+  }) = _AuditCategoryInfo;
+
+  factory AuditCategoryInfo.fromJson(Map<String, dynamic> json) =>
+      _$AuditCategoryInfoFromJson(json);
 }
 
 /// What the signed-in auditor may do with this audit (drives the CTA / inputs).
@@ -141,10 +156,17 @@ sealed class AuditObservation with _$AuditObservation {
   Finding? get findingValue => Finding.fromApi(finding);
 
   /// Lifecycle state derived from the result/completion flags.
+  ///
+  /// The details payload doesn't send `result_id` (and `is_draft` is `true`
+  /// even for untouched observations), so "has a submission" is inferred from
+  /// the presence of a finding / submitter / attachments.
   ObservationState get state {
     if (isCompleted) return ObservationState.completed;
-    if (resultId != null) return ObservationState.draft;
-    return ObservationState.notSubmitted;
+    final hasResult = resultId != null ||
+        finding != null ||
+        submittedBy != null ||
+        files.isNotEmpty;
+    return hasResult ? ObservationState.draft : ObservationState.notSubmitted;
   }
 
   /// Whether a submission exists (draft or completed).
