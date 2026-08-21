@@ -1,16 +1,21 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:ui' show ImageFilter;
 
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 
 const Duration _seekStep = Duration(seconds: 5);
 
+/// Brand accent used for the progress fill, thumb, and primary buttons.
+const Color _accent = Color(0xFF2263F0);
+
 /// Full-frame video player used inside the media viewer. Initializes the
-/// controller, auto-plays/loops, and shows a control bar (play/pause, 5s
-/// seek back/forward, elapsed / total time, scrub bar). Tapping the frame
-/// toggles the control overlay, which auto-hides after a short delay while
-/// playing and stays visible while paused.
+/// controller, auto-plays/loops, and shows a floating glass control bar
+/// (play/pause, 5s seek back/forward, scrub bar, elapsed / total time).
+/// Tapping the frame toggles the control overlay, which auto-hides after a
+/// short delay while playing and stays visible while paused. Double-tap
+/// toggles play/pause.
 class VideoPlayerView extends StatefulWidget {
   const VideoPlayerView({
     required this.source,
@@ -35,7 +40,7 @@ class _VideoPlayerViewState extends State<VideoPlayerView> {
   bool _controlsVisible = true;
   Timer? _hideTimer;
 
-  static const _hideAfter = Duration(seconds: 3);
+  static const _hideAfter = Duration(seconds: 15);
 
   @override
   void initState() {
@@ -95,12 +100,14 @@ class _VideoPlayerViewState extends State<VideoPlayerView> {
     _pingControls(autoHide: resuming);
   }
 
-  Future<void> _seekBy(Duration delta) async {
+  /// Seeks to an absolute position, clamped to the video bounds, and keeps
+  /// the controls visible (also used by the ±5s buttons and the scrub bar).
+  Future<void> _seekTo(Duration target) async {
     final total = _controller.value.duration;
-    var target = _controller.value.position + delta;
-    if (target < Duration.zero) target = Duration.zero;
-    if (target > total) target = total;
-    await _controller.seekTo(target);
+    var clamped = target;
+    if (clamped < Duration.zero) clamped = Duration.zero;
+    if (clamped > total) clamped = total;
+    await _controller.seekTo(clamped);
     if (mounted) _pingControls();
   }
 
@@ -142,23 +149,19 @@ class _VideoPlayerViewState extends State<VideoPlayerView> {
             child: AnimatedOpacity(
               opacity: value.isPlaying ? 0 : 1,
               duration: const Duration(milliseconds: 150),
-              child: GestureDetector(
+              child: _CircleButton(
+                size: 72,
+                icon: Icons.play_arrow,
+                iconSize: 46,
                 onTap: _toggle,
-                behavior: HitTestBehavior.opaque,
-                child: const Icon(
-                  Icons.play_circle_fill,
-                  size: 72,
-                  color: Colors.white,
-                  shadows: [Shadow(color: Colors.black54, blurRadius: 16)],
-                ),
               ),
             ),
           ),
         ),
         Positioned(
-          left: 0,
-          right: 0,
-          bottom: 0,
+          left: 16,
+          right: 16,
+          bottom: MediaQuery.paddingOf(context).bottom + 12,
           child: AnimatedOpacity(
             opacity: _controlsVisible ? 1 : 0,
             duration: const Duration(milliseconds: 200),
@@ -167,7 +170,7 @@ class _VideoPlayerViewState extends State<VideoPlayerView> {
               child: _VideoControls(
                 controller: _controller,
                 onToggle: _toggle,
-                onSeekBy: _seekBy,
+                onSeekTo: _seekTo,
               ),
             ),
           ),
@@ -177,18 +180,19 @@ class _VideoPlayerViewState extends State<VideoPlayerView> {
   }
 }
 
-/// Bottom control bar: 5s seek back, play/pause, 5s seek forward, elapsed
-/// time, seek bar, total time — over a bottom gradient scrim.
+/// Bottom floating control bar: frosted-glass pill holding the scrub bar
+/// above a centered button row (5s back, play/pause, 5s forward) flanked by
+/// elapsed / total time.
 class _VideoControls extends StatelessWidget {
   const _VideoControls({
     required this.controller,
     required this.onToggle,
-    required this.onSeekBy,
+    required this.onSeekTo,
   });
 
   final VideoPlayerController controller;
   final VoidCallback onToggle;
-  final ValueChanged<Duration> onSeekBy;
+  final ValueChanged<Duration> onSeekTo;
 
   static String _fmt(Duration d) {
     final m = d.inMinutes.remainder(60).toString().padLeft(2, '0');
@@ -199,81 +203,244 @@ class _VideoControls extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.only(
-        left: 8,
-        right: 16,
-        top: 24,
-        bottom: MediaQuery.paddingOf(context).bottom + 12,
-      ),
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          stops: [0, 0.4, 1],
-          colors: [Colors.transparent, Colors.black45, Colors.black87],
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(28),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+        child: Container(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+          decoration: BoxDecoration(
+            color: const Color(0x66000000),
+            borderRadius: BorderRadius.circular(28),
+            border: Border.all(color: const Color(0x1AFFFFFF)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _ScrubBar(controller: controller, onSeekTo: onSeekTo),
+              const SizedBox(height: 8),
+              ValueListenableBuilder<VideoPlayerValue>(
+                valueListenable: controller,
+                builder: (_, value, _) => Row(
+                  children: [
+                    Text(
+                      _fmt(value.position),
+                      style: const TextStyle(
+                        color: Color(0xCCFFFFFF),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    Expanded(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          IconButton(
+                            onPressed: () => onSeekTo(
+                              controller.value.position - _seekStep,
+                            ),
+                            visualDensity: VisualDensity.compact,
+                            icon: const Icon(
+                              Icons.replay_5,
+                              color: Colors.white,
+                              size: 24,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          _CircleButton(
+                            icon: value.isPlaying
+                                ? Icons.pause
+                                : Icons.play_arrow,
+                            onTap: onToggle,
+                          ),
+                          const SizedBox(width: 8),
+                          IconButton(
+                            onPressed: () => onSeekTo(
+                              controller.value.position + _seekStep,
+                            ),
+                            visualDensity: VisualDensity.compact,
+                            icon: const Icon(
+                              Icons.forward_5,
+                              color: Colors.white,
+                              size: 24,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Text(
+                      _fmt(value.duration),
+                      style: const TextStyle(
+                        color: Color(0xCCFFFFFF),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
-      child: ValueListenableBuilder<VideoPlayerValue>(
-        valueListenable: controller,
-        builder: (_, value, _) {
-          final total = value.duration;
-          final pos = value.position > total ? total : value.position;
-          return Row(
-            children: [
-              IconButton(
-                onPressed: () => onSeekBy(-_seekStep),
-                visualDensity: VisualDensity.compact,
-                icon: const Icon(
-                  Icons.replay_5,
-                  color: Colors.white,
-                  size: 26,
-                ),
+    );
+  }
+}
+
+/// Slim rounded scrub bar: gray track, translucent buffered fill, accent
+/// played fill, and a round thumb. Tap or drag anywhere on it to seek.
+class _ScrubBar extends StatelessWidget {
+  const _ScrubBar({required this.controller, required this.onSeekTo});
+
+  final VideoPlayerController controller;
+  final ValueChanged<Duration> onSeekTo;
+
+  static const _thumbSize = 12.0;
+
+  void _seekTo(Offset local, double width) {
+    final total = controller.value.duration;
+    final fraction = (local.dx / width).clamp(0.0, 1.0);
+    onSeekTo(total * fraction);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder<VideoPlayerValue>(
+      valueListenable: controller,
+      builder: (_, value, _) {
+        final total = value.duration;
+        final pos = value.position > total ? total : value.position;
+        final played = total == Duration.zero
+            ? 0.0
+            : pos.inMilliseconds / total.inMilliseconds;
+        // Furthest buffered end across all ranges, as a 0..1 fraction.
+        var buffered = 0.0;
+        if (total > Duration.zero) {
+          for (final range in value.buffered) {
+            final end = range.end.inMilliseconds / total.inMilliseconds;
+            if (end > buffered) buffered = end.clamp(0.0, 1.0);
+          }
+        }
+        // Half the thumb width: fills start/end inset so the thumb CENTER
+        // (not its left edge) lines up with the played-fill end.
+        const inset = _thumbSize / 2;
+        return LayoutBuilder(
+          builder: (context, constraints) {
+            final trackWidth = constraints.maxWidth - _thumbSize;
+            return GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTapDown: (d) => _seekTo(
+                d.localPosition - const Offset(inset, 0),
+                trackWidth,
               ),
-              IconButton(
-                onPressed: onToggle,
-                visualDensity: VisualDensity.compact,
-                icon: Icon(
-                  value.isPlaying ? Icons.pause : Icons.play_arrow,
-                  color: Colors.white,
-                  size: 30,
-                ),
+              onHorizontalDragStart: (d) => _seekTo(
+                d.localPosition - const Offset(inset, 0),
+                trackWidth,
               ),
-              IconButton(
-                onPressed: () => onSeekBy(_seekStep),
-                visualDensity: VisualDensity.compact,
-                icon: const Icon(
-                  Icons.forward_5,
-                  color: Colors.white,
-                  size: 26,
-                ),
+              onHorizontalDragUpdate: (d) => _seekTo(
+                d.localPosition - const Offset(inset, 0),
+                trackWidth,
               ),
-              const SizedBox(width: 4),
-              Text(
-                _fmt(pos),
-                style: const TextStyle(color: Colors.white, fontSize: 12),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: VideoProgressIndicator(
-                  controller,
-                  allowScrubbing: true,
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  colors: const VideoProgressColors(
-                    playedColor: Colors.white,
-                    bufferedColor: Colors.white38,
-                    backgroundColor: Colors.white24,
+              child: SizedBox(
+                height: 28, // Generous touch target over the 4px visual bar.
+                child: Center(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: inset),
+                    child: SizedBox(
+                      height: _thumbSize,
+                      width: double.infinity,
+                      child: Stack(
+                        alignment: Alignment.centerLeft,
+                        children: [
+                          // Track.
+                          Container(
+                            height: 4,
+                            decoration: BoxDecoration(
+                              color: const Color(0x33FFFFFF),
+                              borderRadius: BorderRadius.circular(2),
+                            ),
+                          ),
+                          // Buffered fill.
+                          FractionallySizedBox(
+                            widthFactor: buffered,
+                            child: Container(
+                              height: 4,
+                              decoration: BoxDecoration(
+                                color: const Color(0x80FFFFFF),
+                                borderRadius: BorderRadius.circular(2),
+                              ),
+                            ),
+                          ),
+                          // Played fill.
+                          FractionallySizedBox(
+                            widthFactor: played,
+                            child: Container(
+                              height: 4,
+                              decoration: BoxDecoration(
+                                color: _accent,
+                                borderRadius: BorderRadius.circular(2),
+                              ),
+                            ),
+                          ),
+                          // Thumb — aligned to the played fraction. With the
+                          // symmetric inset, Stack width == trackWidth, so the
+                          // thumb CENTER tracks the played-fill end exactly.
+                          Align(
+                            alignment: Alignment(played * 2 - 1, 0),
+                            child: Container(
+                              width: _thumbSize,
+                              height: _thumbSize,
+                              decoration: const BoxDecoration(
+                                color: Colors.white,
+                                shape: BoxShape.circle,
+                                boxShadow: [
+                                  BoxShadow(color: Colors.black45, blurRadius: 4),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
               ),
-              const SizedBox(width: 8),
-              Text(
-                _fmt(total),
-                style: const TextStyle(color: Colors.white, fontSize: 12),
-              ),
-            ],
-          );
-        },
+            );
+          },
+        );
+      },
+    );
+  }
+}
+
+/// Round accent-filled button used for the primary play/pause affordances
+/// (the big paused-state icon and the bar's center button).
+class _CircleButton extends StatelessWidget {
+  const _CircleButton({
+    required this.icon,
+    required this.onTap,
+    this.size = 48,
+    this.iconSize = 30,
+  });
+
+  final IconData icon;
+  final VoidCallback onTap;
+  final double size;
+  final double iconSize;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: size,
+        height: size,
+        decoration: const BoxDecoration(
+          color: _accent,
+          shape: BoxShape.circle,
+          boxShadow: [BoxShadow(color: Colors.black45, blurRadius: 12)],
+        ),
+        child: Icon(icon, color: Colors.white, size: iconSize),
       ),
     );
   }
