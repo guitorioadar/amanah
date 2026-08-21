@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:amanah/core/theme/app_spacing.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
@@ -27,7 +28,8 @@ class MediaItem {
 }
 
 /// Opens a full-screen, swipeable media gallery starting at [initialIndex].
-/// Images pinch-to-zoom; videos play with tap-to-toggle and a scrub bar.
+/// Images pinch-to-zoom; videos have play/pause + a scrub bar with timings.
+/// Drag the media up or down to dismiss.
 Future<void> showMediaViewer(
   BuildContext context, {
   required List<MediaItem> items,
@@ -37,7 +39,7 @@ Future<void> showMediaViewer(
   return Navigator.of(context).push(
     PageRouteBuilder<void>(
       opaque: false,
-      barrierColor: Colors.black,
+      barrierColor: Colors.transparent,
       fullscreenDialog: true,
       pageBuilder: (_, _, _) =>
           _MediaViewer(items: items, initialIndex: initialIndex),
@@ -56,36 +58,76 @@ class _MediaViewer extends StatefulWidget {
 }
 
 class _MediaViewerState extends State<_MediaViewer> {
-  late final PageController _controller =
+  late final PageController _pageController =
       PageController(initialPage: widget.initialIndex);
   late int _index = widget.initialIndex;
 
+  /// Vertical drag offset for the swipe-to-dismiss gesture.
+  double _dragDy = 0;
+
+  /// Distance past which releasing the drag dismisses the viewer.
+  static const _dismissThreshold = 120.0;
+
   @override
   void dispose() {
-    _controller.dispose();
+    _pageController.dispose();
     super.dispose();
+  }
+
+  void _onDragUpdate(DragUpdateDetails d) {
+    setState(() => _dragDy += d.delta.dy);
+  }
+
+  void _onDragEnd(DragEndDetails d) {
+    final velocity = d.primaryVelocity ?? 0;
+    if (_dragDy.abs() > _dismissThreshold || velocity.abs() > 700) {
+      Navigator.of(context).pop();
+    } else {
+      setState(() => _dragDy = 0);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.sizeOf(context);
+    final dragFraction = (_dragDy.abs() / (size.height * 0.6)).clamp(0.0, 1.0);
+    // Fade the backdrop and slightly shrink the media as it's dragged away.
+    final bgOpacity = 1 - dragFraction * 0.9;
+    final scale = 1 - dragFraction * 0.1;
     final multiple = widget.items.length > 1;
+    final topInset = MediaQuery.paddingOf(context).top;
+
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: Colors.transparent,
       body: Stack(
         children: [
-          PageView.builder(
-            controller: _controller,
-            itemCount: widget.items.length,
-            onPageChanged: (i) => setState(() => _index = i),
-            itemBuilder: (_, i) {
-              final item = widget.items[i];
-              return item.isVideo
-                  ? _VideoPage(item: item)
-                  : _ImagePage(item: item);
-            },
+          Positioned.fill(
+            child: ColoredBox(color: Colors.black.withValues(alpha: bgOpacity)),
+          ),
+          // Media pager — translated + scaled by the dismiss drag.
+          Transform.translate(
+            offset: Offset(0, _dragDy),
+            child: Transform.scale(
+              scale: scale,
+              child: GestureDetector(
+                onVerticalDragUpdate: _onDragUpdate,
+                onVerticalDragEnd: _onDragEnd,
+                child: PageView.builder(
+                  controller: _pageController,
+                  itemCount: widget.items.length,
+                  onPageChanged: (i) => setState(() => _index = i),
+                  itemBuilder: (_, i) {
+                    final item = widget.items[i];
+                    return item.isVideo
+                        ? _VideoPage(item: item)
+                        : _ImagePage(item: item);
+                  },
+                ),
+              ),
+            ),
           ),
           Positioned(
-            top: MediaQuery.of(context).padding.top + 8,
+            top: topInset + 8,
             left: 8,
             child: _RoundIcon(
               icon: Icons.close,
@@ -94,7 +136,7 @@ class _MediaViewerState extends State<_MediaViewer> {
           ),
           if (multiple)
             Positioned(
-              top: MediaQuery.of(context).padding.top + 16,
+              top: topInset + 16,
               left: 0,
               right: 0,
               child: Center(
@@ -114,13 +156,43 @@ class _MediaViewerState extends State<_MediaViewer> {
   }
 }
 
-/// Pinch/pan-zoomable image page (network or local).
-class _ImagePage extends StatelessWidget {
+/// Pinch/pan-zoomable image page (network or local). Panning is enabled only
+/// while zoomed in, so a plain vertical drag at rest reaches the dismiss
+/// gesture instead of being swallowed by the viewer.
+class _ImagePage extends StatefulWidget {
   const _ImagePage({required this.item});
   final MediaItem item;
 
   @override
+  State<_ImagePage> createState() => _ImagePageState();
+}
+
+class _ImagePageState extends State<_ImagePage> {
+  final _transform = TransformationController();
+  bool _zoomed = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _transform.addListener(_onTransform);
+  }
+
+  void _onTransform() {
+    final zoomed = _transform.value.getMaxScaleOnAxis() > 1.01;
+    if (zoomed != _zoomed) setState(() => _zoomed = zoomed);
+  }
+
+  @override
+  void dispose() {
+    _transform
+      ..removeListener(_onTransform)
+      ..dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final item = widget.item;
     final image = item.isLocal
         ? Image.file(File(item.source), fit: BoxFit.contain)
         : CachedNetworkImage(
@@ -138,15 +210,17 @@ class _ImagePage extends StatelessWidget {
             ),
           );
     return InteractiveViewer(
+      transformationController: _transform,
       minScale: 1,
       maxScale: 4,
+      panEnabled: _zoomed,
       child: Center(child: image),
     );
   }
 }
 
-/// Video page: initializes the controller, auto-plays, tap toggles play/pause,
-/// and a scrub bar sits at the bottom.
+/// Video page: initializes the controller, auto-plays, and shows a control bar
+/// (play/pause, elapsed / total time, scrub bar).
 class _VideoPage extends StatefulWidget {
   const _VideoPage({required this.item});
   final MediaItem item;
@@ -200,54 +274,121 @@ class _VideoPageState extends State<_VideoPage> {
   Widget build(BuildContext context) {
     if (_error != null) {
       return const Center(
-        child: Icon(
-          Icons.error_outline,
-          color: Colors.white54,
-          size: 48,
-        ),
+        child: Icon(Icons.error_outline, color: Colors.white54, size: 48),
       );
     }
     if (!_ready) {
-      return const Center(child: CircularProgressIndicator(color: Colors.white));
+      return const Center(
+        child: CircularProgressIndicator(color: Colors.white),
+      );
     }
-    return GestureDetector(
-      onTap: _toggle,
-      behavior: HitTestBehavior.opaque,
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          Center(
-            child: AspectRatio(
-              aspectRatio: _controller.value.aspectRatio,
-              child: VideoPlayer(_controller),
-            ),
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        Center(
+          child: AspectRatio(
+            aspectRatio: _controller.value.aspectRatio,
+            child: VideoPlayer(_controller),
           ),
-          // Play indicator only while paused.
-          ValueListenableBuilder<VideoPlayerValue>(
+        ),
+        // Center play affordance only while paused (tap the frame to toggle).
+        GestureDetector(
+          onTap: _toggle,
+          behavior: HitTestBehavior.opaque,
+          child: ValueListenableBuilder<VideoPlayerValue>(
             valueListenable: _controller,
-            builder: (_, value, _) => value.isPlaying
-                ? const SizedBox.shrink()
-                : const Icon(
-                    Icons.play_circle_fill,
-                    size: 72,
-                    color: Colors.white70,
-                  ),
-          ),
-          Positioned(
-            left: 16,
-            right: 16,
-            bottom: MediaQuery.of(context).padding.bottom + 24,
-            child: VideoProgressIndicator(
-              _controller,
-              allowScrubbing: true,
-              colors: const VideoProgressColors(
-                playedColor: Colors.white,
-                bufferedColor: Colors.white38,
-                backgroundColor: Colors.white24,
+            builder: (_, value, _) => AnimatedOpacity(
+              opacity: value.isPlaying ? 0 : 1,
+              duration: const Duration(milliseconds: 150),
+              child: const Icon(
+                Icons.play_circle_fill,
+                size: 72,
+                color: Colors.white70,
               ),
             ),
           ),
-        ],
+        ),
+        Positioned(
+          left: 0,
+          right: 0,
+          bottom: AppSpacing.s9,
+          child: _VideoControls(controller: _controller, onToggle: _toggle),
+        ),
+      ],
+    );
+  }
+}
+
+/// Bottom control bar: play/pause button, elapsed time, seek bar, total time.
+class _VideoControls extends StatelessWidget {
+  const _VideoControls({required this.controller, required this.onToggle});
+
+  final VideoPlayerController controller;
+  final VoidCallback onToggle;
+
+  static String _fmt(Duration d) {
+    final m = d.inMinutes.remainder(60).toString().padLeft(2, '0');
+    final s = d.inSeconds.remainder(60).toString().padLeft(2, '0');
+    final h = d.inHours;
+    return h > 0 ? '$h:$m:$s' : '$m:$s';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.only(
+        left: 8,
+        right: 16,
+        top: 8,
+        bottom: MediaQuery.paddingOf(context).bottom + 12,
+      ),
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [Colors.transparent, Colors.black54],
+        ),
+      ),
+      child: ValueListenableBuilder<VideoPlayerValue>(
+        valueListenable: controller,
+        builder: (_, value, _) {
+          final total = value.duration;
+          final pos = value.position > total ? total : value.position;
+          return Row(
+            children: [
+              IconButton(
+                onPressed: onToggle,
+                icon: Icon(
+                  value.isPlaying ? Icons.pause : Icons.play_arrow,
+                  color: Colors.white,
+                  size: 28,
+                ),
+              ),
+              Text(
+                _fmt(pos),
+                style: const TextStyle(color: Colors.white, fontSize: 12),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: VideoProgressIndicator(
+                  controller,
+                  allowScrubbing: true,
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  colors: const VideoProgressColors(
+                    playedColor: Colors.white,
+                    bufferedColor: Colors.white38,
+                    backgroundColor: Colors.white24,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                _fmt(total),
+                style: const TextStyle(color: Colors.white, fontSize: 12),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
