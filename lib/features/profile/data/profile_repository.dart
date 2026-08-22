@@ -34,13 +34,6 @@ abstract interface class ProfileRepository {
   /// Saves the editable personal-info fields and returns the updated user.
   Future<User> updateProfile(ProfileUpdate update);
 
-  /// Verifies [currentPassword] and sets [newPassword]. Throws on a wrong
-  /// current password or a rejected new password.
-  Future<void> changePassword({
-    required String currentPassword,
-    required String newPassword,
-  });
-
   /// Permanently deletes the account. The session is invalidated afterwards.
   /// No re-auth is required — the confirmation modal is the guard (per design).
   Future<void> deleteAccount();

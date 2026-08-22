@@ -13,10 +13,6 @@ class MockProfileRepository implements ProfileRepository {
 
   static const _prefsPrefix = 'profile.notifications';
 
-  /// Accepted "current password" for change-password/delete-account demos.
-  /// Any value works when the signed-in user has no password to check.
-  static const demoPassword = 'Amanah@123';
-
   /// Signed-in user injected by the provider so mocks can return a properly
   /// merged result, like the real API will. Refreshed with the provider.
   final User? _cachedUser;
@@ -37,17 +33,6 @@ class MockProfileRepository implements ProfileRepository {
           '${update.mobileCountryCode ?? ''}${update.mobileNumber ?? ''}',
       profilePictureUrl: update.profilePictureUrl ?? base.profilePictureUrl,
     );
-  }
-
-  @override
-  Future<void> changePassword({
-    required String currentPassword,
-    required String newPassword,
-  }) async {
-    await Future<void>.delayed(const Duration(milliseconds: 600));
-    if (currentPassword != demoPassword) {
-      throw StateError('Current password is incorrect');
-    }
   }
 
   @override

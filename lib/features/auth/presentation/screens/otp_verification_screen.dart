@@ -4,6 +4,7 @@ import 'package:amanah/core/network/api_exception.dart';
 import 'package:amanah/core/theme/app_colors.dart';
 import 'package:amanah/core/theme/app_spacing.dart';
 import 'package:amanah/core/theme/app_text_styles.dart';
+import 'package:amanah/core/utils/email_mask.dart';
 import 'package:amanah/features/auth/presentation/providers/auth_providers.dart';
 import 'package:amanah/features/auth/presentation/widgets/auth_scaffold.dart';
 import 'package:amanah/features/auth/presentation/widgets/otp_input.dart';
@@ -79,7 +80,7 @@ class _OtpVerificationScreenState
                     'address at ',
               ),
               TextSpan(
-                text: widget.email,
+                text: maskEmail(widget.email),
                 style: AppText.bodyLMedium
                     .copyWith(color: AppColors.textDefault),
               ),
