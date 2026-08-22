@@ -1,3 +1,4 @@
+import 'package:amanah/core/network/api_exception.dart';
 import 'package:amanah/core/theme/app_colors.dart';
 import 'package:amanah/core/theme/app_spacing.dart';
 import 'package:amanah/core/theme/app_system_ui.dart';
@@ -5,13 +6,16 @@ import 'package:amanah/core/theme/app_text_styles.dart';
 import 'package:amanah/core/widgets/app_avatar.dart';
 import 'package:amanah/core/widgets/app_button.dart';
 import 'package:amanah/core/widgets/app_text_field.dart';
+import 'package:amanah/core/widgets/media_viewer.dart';
 import 'package:amanah/features/auth/presentation/providers/session_providers.dart';
 import 'package:amanah/features/profile/data/profile_repository.dart';
 import 'package:amanah/features/profile/presentation/providers/profile_providers.dart';
 import 'package:amanah/features/profile/presentation/widgets/profile_top_bar.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_cropper/image_cropper.dart';
 
 /// Fixed dial code — Canada per design (the flag/code are not user-editable).
 const _kDialCode = '+1';
@@ -33,6 +37,7 @@ class _PersonalInfoScreenState extends ConsumerState<PersonalInfoScreen> {
   late final TextEditingController _phone;
   late final TextEditingController _address;
   bool _saving = false;
+  bool _uploadingPhoto = false;
 
   @override
   void initState() {
@@ -93,6 +98,58 @@ class _PersonalInfoScreenState extends ConsumerState<PersonalInfoScreen> {
     }
   }
 
+  /// Pick → free-form crop (square or rectangle) → multipart upload.
+  Future<void> _changePhoto() async {
+    final picked = await FilePicker.pickFiles(type: FileType.image);
+    final path = picked.isEmpty ? null : picked.first.path;
+    if (path == null) return;
+
+    final cropped = await ImageCropper().cropImage(
+      sourcePath: path,
+      uiSettings: [
+        AndroidUiSettings(
+          toolbarTitle: 'Crop photo',
+          toolbarColor: AppColors.bgSolid,
+          toolbarWidgetColor: AppColors.textInverse,
+          activeControlsWidgetColor: AppColors.brand,
+          // Free-form: any aspect (square or rectangle), user can lock presets.
+          lockAspectRatio: false,
+          hideBottomControls: false,
+        ),
+        IOSUiSettings(title: 'Crop photo'),
+      ],
+    );
+    if (cropped == null) return;
+
+    setState(() => _uploadingPhoto = true);
+    try {
+      final url = await ref
+          .read(profileRepositoryProvider)
+          .updateProfilePicture(cropped.path);
+      if (!mounted) return;
+      final current = ref.read(currentUserProvider);
+      if (current != null) {
+        await ref
+            .read(currentUserProvider.notifier)
+            .setUser(current.copyWith(profilePictureUrl: url));
+      }
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(const SnackBar(content: Text('Photo updated')));
+    } on Object catch (e) {
+      if (!mounted) return;
+      final msg = e is ApiException
+          ? e.message
+          : "Couldn't update photo. Try again.";
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(SnackBar(content: Text(msg)));
+    } finally {
+      if (mounted) setState(() => _uploadingPhoto = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final user = ref.watch(currentUserProvider);
@@ -116,7 +173,11 @@ class _PersonalInfoScreenState extends ConsumerState<PersonalInfoScreen> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       const SizedBox(height: AppSpacing.s6),
-                      _AvatarSection(avatarUrl: user?.profilePictureUrl),
+                      _AvatarSection(
+                        avatarUrl: user?.profilePictureUrl,
+                        loading: _uploadingPhoto,
+                        onChangePhoto: _uploadingPhoto ? null : _changePhoto,
+                      ),
                       const SizedBox(height: AppSpacing.s6),
                       Padding(
                         padding:
@@ -187,28 +248,64 @@ class _PersonalInfoScreenState extends ConsumerState<PersonalInfoScreen> {
   }
 }
 
-/// Avatar + "Change photo" button. Photo picking lands with the upload API;
-/// the button shows a toast for now.
+/// Avatar + "Change photo" button. Tapping picks an image, lets the user crop
+/// it, then uploads it; a spinner overlays the avatar while uploading.
 class _AvatarSection extends StatelessWidget {
-  const _AvatarSection({required this.avatarUrl});
+  const _AvatarSection({
+    required this.avatarUrl,
+    required this.loading,
+    required this.onChangePhoto,
+  });
 
   final String? avatarUrl;
+  final bool loading;
+  final VoidCallback? onChangePhoto;
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        AppAvatar(
-          url: avatarUrl,
-          size: 80,
-          borderColor: AppColors.borderDefault,
-          borderWidth: 1,
+        Stack(
+          alignment: Alignment.center,
+          children: [
+            GestureDetector(
+              onTap: (avatarUrl == null || avatarUrl!.isEmpty || loading)
+                  ? null
+                  : () => showMediaViewer(
+                        context,
+                        items: [MediaItem.networkImage(avatarUrl!)],
+                      ),
+              child: AppAvatar(
+                url: avatarUrl,
+                size: 80,
+                borderColor: AppColors.borderDefault,
+                borderWidth: 1,
+              ),
+            ),
+            if (loading)
+              Container(
+                width: 80,
+                height: 80,
+                decoration: BoxDecoration(
+                  color: AppColors.scrim,
+                  shape: BoxShape.circle,
+                ),
+                child: const Center(
+                  child: SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: AppColors.brandOnPrimary,
+                    ),
+                  ),
+                ),
+              ),
+          ],
         ),
         const SizedBox(height: AppSpacing.s3),
         OutlinedButton(
-          onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Photo upload coming soon')),
-          ),
+          onPressed: onChangePhoto,
           style: OutlinedButton.styleFrom(
             foregroundColor: AppColors.textDefault,
             side: BorderSide(color: AppColors.borderDefault),

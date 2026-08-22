@@ -34,6 +34,9 @@ abstract interface class ProfileRepository {
   /// Saves the editable personal-info fields and returns the updated user.
   Future<User> updateProfile(ProfileUpdate update);
 
+  /// Uploads a new avatar (multipart) and returns its public URL.
+  Future<String> updateProfilePicture(String filePath);
+
   /// Permanently deletes the account. The session is invalidated afterwards.
   /// No re-auth is required — the confirmation modal is the guard (per design).
   Future<void> deleteAccount();

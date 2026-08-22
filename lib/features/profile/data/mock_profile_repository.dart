@@ -36,6 +36,12 @@ class MockProfileRepository implements ProfileRepository {
   }
 
   @override
+  Future<String> updateProfilePicture(String filePath) async {
+    await Future<void>.delayed(const Duration(milliseconds: 600));
+    return _cachedUser?.profilePictureUrl ?? '';
+  }
+
+  @override
   Future<void> deleteAccount() async {
     await Future<void>.delayed(const Duration(milliseconds: 600));
   }

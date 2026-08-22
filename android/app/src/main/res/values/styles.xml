@@ -15,4 +15,11 @@
     <style name="NormalTheme" parent="@android:style/Theme.Light.NoTitleBar">
         <item name="android:windowBackground">?android:colorBackground</item>
     </style>
+    <!-- image_cropper (UCrop): inset the toolbar below the status bar/notch and
+         paint an opaque navy status bar so the X/OK controls aren't hidden. -->
+    <style name="Theme.Amanah.UCrop" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="android:fitsSystemWindows">true</item>
+        <item name="android:statusBarColor">@color/ucrop_toolbar</item>
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
 </resources>

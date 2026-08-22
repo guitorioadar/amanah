@@ -34,6 +34,25 @@ class ProfileRepositoryImpl implements ProfileRepository {
   }
 
   @override
+  Future<String> updateProfilePicture(String filePath) async {
+    try {
+      final form = FormData.fromMap({
+        'profile_picture': await MultipartFile.fromFile(filePath),
+      });
+      final res = await _dio.post<Map<String, dynamic>>(
+        '/auth/profile-picture',
+        data: form,
+      );
+      // Envelope: { data: { file: { url, ... }, download_url } }.
+      final data = res.data!['data'] as Map<String, dynamic>;
+      final file = data['file'] as Map<String, dynamic>?;
+      return (file?['url'] ?? data['download_url']) as String;
+    } on DioException catch (e) {
+      throw ApiException.fromDio(e);
+    }
+  }
+
+  @override
   Future<void> deleteAccount() => _fallback.deleteAccount();
 
   @override

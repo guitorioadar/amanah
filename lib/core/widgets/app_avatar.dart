@@ -2,6 +2,7 @@ import 'package:amanah/core/theme/app_colors.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:shimmer/shimmer.dart';
 
 /// Circular user avatar. Loads [url] with disk+memory caching
 /// ([CachedNetworkImage]) and falls back to the `User` glyph when the URL is
@@ -40,13 +41,20 @@ class AppAvatar extends StatelessWidget {
             ? CachedNetworkImage(
                 imageUrl: url!,
                 fit: BoxFit.cover,
-                placeholder: (_, _) => _placeholder(),
+                // Shimmer while the (new) image loads; glyph only on failure.
+                placeholder: (_, _) => _shimmer(),
                 errorWidget: (_, _, _) => _placeholder(),
               )
             : _placeholder(),
       ),
     );
   }
+
+  Widget _shimmer() => Shimmer.fromColors(
+        baseColor: AppColors.skeletonBase,
+        highlightColor: AppColors.skeletonHighlight,
+        child: const ColoredBox(color: AppColors.skeletonBase),
+      );
 
   Widget _placeholder() => ColoredBox(
         color: AppColors.bgHovered,

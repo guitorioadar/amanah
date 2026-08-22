@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="ic_launcher_background">#FFFFFF</color>
+    <!-- Navy toolbar/status-bar for the image_cropper (UCrop) screen. -->
+    <color name="ucrop_toolbar">#091E42</color>
 </resources>
