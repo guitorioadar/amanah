@@ -121,7 +121,7 @@ class _TopBar extends StatelessWidget {
                 'assets/icons/line/CaretLeft.svg',
                 width: 24,
                 colorFilter: const ColorFilter.mode(
-                  AppColors.iconInverse,
+                  AppColors.iconSubtlest,
                   BlendMode.srcIn,
                 ),
               ),

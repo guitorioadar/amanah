@@ -10,6 +10,13 @@ abstract final class AppSpacing {
   static const s7 = 32.0;
   static const s8 = 40.0;
   static const s9 = 48.0;
+  static const s10 = 56.0;
+  static const s11 = 64.0;
+  static const s12 = 72.0;
+  static const s13 = 80.0;
+  static const s14 = 88.0;
+  static const s15 = 96.0;
+  static const s16 = 104.0;
 
   /// Default horizontal screen padding.
   static const screenH = 16.0;

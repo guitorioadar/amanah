@@ -8,7 +8,11 @@ import 'package:amanah/features/auth/presentation/screens/set_new_password_scree
 import 'package:amanah/features/auth/presentation/screens/sign_in_screen.dart';
 import 'package:amanah/features/auth/presentation/screens/signing_out_screen.dart';
 import 'package:amanah/features/home/presentation/screens/home_screen.dart';
+import 'package:amanah/features/profile/presentation/screens/legal_screen.dart';
+import 'package:amanah/features/profile/presentation/screens/notification_settings_screen.dart';
+import 'package:amanah/features/profile/presentation/screens/personal_info_screen.dart';
 import 'package:amanah/features/profile/presentation/screens/profile_screen.dart';
+import 'package:amanah/features/profile/presentation/screens/security_screen.dart';
 import 'package:amanah/features/shell/presentation/branch_container.dart';
 import 'package:amanah/features/shell/presentation/shell_screen.dart';
 import 'package:amanah/features/splash/presentation/splash_screen.dart';
@@ -66,6 +70,27 @@ GoRouter buildRouter() {
       GoRoute(
         path: '/password-updated',
         builder: (context, state) => const PasswordUpdatedScreen(),
+      ),
+      // Profile subscreens (full-screen over the shell).
+      GoRoute(
+        path: '/profile/personal-info',
+        builder: (context, state) => const PersonalInfoScreen(),
+      ),
+      GoRoute(
+        path: '/profile/security',
+        builder: (context, state) => const SecurityScreen(),
+      ),
+      GoRoute(
+        path: '/profile/notifications',
+        builder: (context, state) => const NotificationSettingsScreen(),
+      ),
+      GoRoute(
+        path: '/profile/privacy',
+        builder: (context, state) => const LegalScreen.privacy(),
+      ),
+      GoRoute(
+        path: '/profile/terms',
+        builder: (context, state) => const LegalScreen.terms(),
       ),
       // Full-screen over the shell (own back button, no bottom nav).
       GoRoute(

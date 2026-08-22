@@ -50,16 +50,19 @@ class ProfileScreen extends ConsumerWidget {
                               icon: 'User',
                               color: AppColors.iconBrand,
                               label: 'Personal information',
+                              route: '/profile/personal-info',
                             ),
                             _RowSpec(
                               icon: 'Lock',
                               color: AppColors.iconInformation,
                               label: 'Sign in & Security',
+                              route: '/profile/security',
                             ),
                             _RowSpec(
                               icon: 'Bell',
                               color: AppColors.iconWarning,
                               label: 'Notification',
+                              route: '/profile/notifications',
                             ),
                           ],
                         ),
@@ -72,11 +75,13 @@ class ProfileScreen extends ConsumerWidget {
                               icon: 'ShieldCheck',
                               color: AppColors.iconSuccess,
                               label: 'Privacy policy',
+                              route: '/profile/privacy',
                             ),
                             _RowSpec(
                               icon: 'FileText',
                               color: AppColors.iconMagenta,
                               label: 'Terms & conditions',
+                              route: '/profile/terms',
                             ),
                           ],
                         ),
@@ -171,10 +176,16 @@ class _SectionLabel extends StatelessWidget {
 }
 
 class _RowSpec {
-  _RowSpec({required this.icon, required this.color, required this.label});
+  _RowSpec({
+    required this.icon,
+    required this.color,
+    required this.label,
+    required this.route,
+  });
   final String icon;
   final Color color;
   final String label;
+  final String route;
 }
 
 class _Card extends StatelessWidget {
@@ -209,9 +220,7 @@ class _Row extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: () => ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('${spec.label} — coming soon')),
-      ),
+      onTap: () => context.push(spec.route),
       child: Padding(
         padding: const EdgeInsets.symmetric(
           horizontal: AppSpacing.s4,

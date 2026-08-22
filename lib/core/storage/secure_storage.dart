@@ -10,10 +10,16 @@ class SecureStorage {
 
   static const _kAccessToken = 'access_token';
   static const _kRefreshToken = 'refresh_token';
+  static const _kTokenType = 'token_type';
   static const _kUser = 'user_json';
 
   Future<String?> get accessToken => _storage.read(key: _kAccessToken);
   Future<String?> get refreshToken => _storage.read(key: _kRefreshToken);
+
+  /// Scheme for the Authorization header (e.g. `Bearer`). Defaults to
+  /// `Bearer` when the backend omits it.
+  Future<String> get tokenType async =>
+      await _storage.read(key: _kTokenType) ?? 'Bearer';
 
   /// True when an access token is stored — the app treats this as "signed in"
   /// on cold start (drives the splash → dashboard/sign-in decision).
@@ -25,10 +31,14 @@ class SecureStorage {
   Future<void> saveTokens({
     required String accessToken,
     String? refreshToken,
+    String? tokenType,
   }) async {
     await _storage.write(key: _kAccessToken, value: accessToken);
     if (refreshToken != null) {
       await _storage.write(key: _kRefreshToken, value: refreshToken);
+    }
+    if (tokenType != null) {
+      await _storage.write(key: _kTokenType, value: tokenType);
     }
   }
 
@@ -39,6 +49,7 @@ class SecureStorage {
   Future<void> clear() async {
     await _storage.delete(key: _kAccessToken);
     await _storage.delete(key: _kRefreshToken);
+    await _storage.delete(key: _kTokenType);
     await _storage.delete(key: _kUser);
   }
 }

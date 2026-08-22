@@ -44,6 +44,9 @@ abstract final class AppColors {
   static const Color bgSolid = AppPalette.neutral12; // navy header
   static const Color bgBrandBold = AppPalette.brand;
 
+  // Input fields.
+  static final Color bgInput = AppPalette.neutral12.withValues(alpha: 0.05);
+
   static const Color bgChipInProgress = AppPalette.blue3;
   static const Color bgChipUpcoming = AppPalette.orange3;
   static const Color bgChipCompleted = AppPalette.green3;

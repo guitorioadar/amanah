@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 /// Set [obscurable] for a password field with an eye toggle.
 class AppTextField extends StatefulWidget {
   const AppTextField({
-    required this.label,
+    this.label,
     this.hint,
     this.controller,
     this.validator,
@@ -16,10 +16,14 @@ class AppTextField extends StatefulWidget {
     this.obscurable = false,
     this.onFieldSubmitted,
     this.enabled = true,
+    this.labelStyle,
+    this.bordered = true,
     super.key,
   });
 
-  final String label;
+  /// Label rendered above the input. Omit for an unlabelled field (e.g. the
+  /// number half of the phone row).
+  final String? label;
   final String? hint;
   final TextEditingController? controller;
   final String? Function(String?)? validator;
@@ -29,6 +33,13 @@ class AppTextField extends StatefulWidget {
   final ValueChanged<String>? onFieldSubmitted;
   final bool enabled;
 
+  /// Overrides the label typography. Defaults to Body/M/Medium.
+  final TextStyle? labelStyle;
+
+  /// Draws the rounded outline + fill. Set false for a borderless, transparent
+  /// input (e.g. embedded inside another bordered container like the phone row).
+  final bool bordered;
+
   @override
   State<AppTextField> createState() => _AppTextFieldState();
 }
@@ -36,16 +47,29 @@ class AppTextField extends StatefulWidget {
 class _AppTextFieldState extends State<AppTextField> {
   late bool _obscured = widget.obscurable;
 
+  static final _noBorder = OutlineInputBorder(
+    borderRadius: BorderRadius.circular(AppRadius.md),
+    borderSide: BorderSide.none,
+  );
+
+  static final _defaultBorder = OutlineInputBorder(
+    borderRadius: BorderRadius.circular(AppRadius.md),
+    borderSide: BorderSide(color: AppColors.borderDefault),
+  );
+
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          widget.label,
-          style: AppText.bodyMMedium.copyWith(color: AppColors.textDefault),
-        ),
-        const SizedBox(height: AppSpacing.s2),
+        if (widget.label != null) ...[
+          Text(
+            widget.label!,
+            style: (widget.labelStyle ?? AppText.bodyMMedium)
+                .copyWith(color: AppColors.textDefault),
+          ),
+          const SizedBox(height: AppSpacing.s2),
+        ],
         TextFormField(
           controller: widget.controller,
           validator: widget.validator,
@@ -54,9 +78,24 @@ class _AppTextFieldState extends State<AppTextField> {
           obscureText: _obscured,
           enabled: widget.enabled,
           onFieldSubmitted: widget.onFieldSubmitted,
-          style: AppText.bodyLRegular,
+          style: AppText.bodyLRegular.copyWith(
+            color: widget.enabled ? AppColors.textDefault : AppColors.textSubtlest,
+          ),
+          // Centres the text within the fixed 36pt box, matching AppSearchField.
+          textAlignVertical: TextAlignVertical.center,
           decoration: InputDecoration(
             hintText: widget.hint,
+            // Borderless variant is transparent; otherwise disabled fields read
+            // as a filled grey chip and enabled ones as white, per design.
+            filled: widget.bordered,
+            fillColor: widget.enabled ? AppColors.bgDefault : AppColors.bgInput,
+            border: widget.bordered ? _defaultBorder : _noBorder,
+            enabledBorder: widget.bordered ? _defaultBorder : _noBorder,
+            focusedBorder: widget.bordered ? null : _noBorder,
+            disabledBorder: widget.bordered ? _defaultBorder : _noBorder,
+            contentPadding: !widget.bordered
+                ? EdgeInsets.zero
+                : const EdgeInsets.symmetric(horizontal: AppSpacing.s3),
             // Design ships only an eye-slash asset (no plain eye), so the
             // toggle uses the Material visibility pair for a clear two-state.
             suffixIcon: widget.obscurable

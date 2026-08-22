@@ -16,7 +16,10 @@ class AuthInterceptor extends Interceptor {
   ) async {
     final token = await _storage.accessToken;
     if (token != null && token.isNotEmpty) {
-      options.headers['Authorization'] = 'Bearer $token';
+      // Scheme comes from the login response (`token_type`), defaulting to
+      // Bearer when storage has none (e.g. mock sign-ins).
+      final scheme = await _storage.tokenType;
+      options.headers['Authorization'] = '$scheme $token';
     }
     handler.next(options);
   }

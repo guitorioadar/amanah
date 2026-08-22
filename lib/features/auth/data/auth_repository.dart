@@ -80,12 +80,16 @@ class AuthRepositoryImpl implements AuthRepository {
     }
   }
 
-  /// Extracts `{ data: { user, access_token } }`, saves the token, returns User.
+  /// Extracts `{ data: { user, access_token, token_type } }`, saves the
+  /// token(s), returns the User. `refresh_token` is read defensively — the
+  /// backend does not send one yet (long-lived JWTs); it starts persisting
+  /// automatically the day it appears.
   Future<User> _persistSession(Map<String, dynamic> body) async {
     final data = body['data'] as Map<String, dynamic>;
     await _storage.saveTokens(
       accessToken: data['access_token'] as String,
       refreshToken: data['refresh_token'] as String?,
+      tokenType: data['token_type'] as String?,
     );
     return User.fromJson(data['user'] as Map<String, dynamic>);
   }
