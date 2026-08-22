@@ -22,7 +22,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
   final _formKey = GlobalKey<FormState>();
   
   final _email = TextEditingController( text: kDebugMode ? 'wasisadman.cse@gmail.com' : '', ); // sadman@example.com | mahmudshakkhor@gmail.com
-  final _password = TextEditingController( text: kDebugMode ? '12345678' : '', ); //  1234567890 | P123456a@
+  final _password = TextEditingController( text: kDebugMode ? '1234567890' : '', ); //  1234567890 | P123456a@
   
   var _autovalidate = false;
 
