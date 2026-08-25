@@ -11,8 +11,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-/// Notification preferences: Email + In-app toggles. Loaded through the
-/// profile repository (SharedPreferences while mocked) and saved on flip.
+/// Notification preferences: Email + In-app toggles. The settings are warmed
+/// into [notificationSettingsProvider] at login / cold-start, so this screen
+/// reads them from cache and renders instantly. A missing cache (rare) is
+/// refetched here as a fallback.
 class NotificationSettingsScreen extends ConsumerStatefulWidget {
   const NotificationSettingsScreen({super.key});
 
@@ -23,43 +25,21 @@ class NotificationSettingsScreen extends ConsumerStatefulWidget {
 
 class _NotificationSettingsScreenState
     extends ConsumerState<NotificationSettingsScreen> {
-  NotificationSettings? _settings;
-  bool _loading = true;
-
   @override
   void initState() {
     super.initState();
-    unawaited(_load());
-  }
-
-  Future<void> _load() async {
-    try {
-      final settings =
-          await ref.read(profileRepositoryProvider).notificationSettings();
-      if (!mounted) return;
-      setState(() {
-        _settings = settings;
-        _loading = false;
-      });
-    } on Object catch (_) {
-      if (!mounted) return;
-      setState(() => _loading = false);
+    // Fallback: fetch if the preload never ran (e.g. deep-link cold path).
+    if (ref.read(notificationSettingsProvider) == null) {
+      unawaited(ref.read(notificationSettingsProvider.notifier).load());
     }
   }
 
   Future<void> _onChanged(NotificationSettings next) async {
-    setState(() => _settings = next);
     try {
-      await ref
-          .read(profileRepositoryProvider)
-          .updateNotificationSettings(next);
+      await ref.read(notificationSettingsProvider.notifier).update(next);
     } on Object catch (_) {
       if (!mounted) return;
-      // Revert on failure so the UI never lies about persisted state.
-      setState(() => _settings = next.copyWith(
-            emailEnabled: !next.emailEnabled,
-            inAppEnabled: !next.inAppEnabled,
-          ));
+      // The notifier already reverted its state; just surface the failure.
       ScaffoldMessenger.of(context)
         ..hideCurrentSnackBar()
         ..showSnackBar(
@@ -71,7 +51,7 @@ class _NotificationSettingsScreenState
   @override
   Widget build(BuildContext context) {
     final topInset = MediaQuery.of(context).viewPadding.top;
-    final settings = _settings;
+    final settings = ref.watch(notificationSettingsProvider);
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: AppSystemUi.dark,
@@ -80,13 +60,12 @@ class _NotificationSettingsScreenState
         body: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            const SizedBox(height: AppSpacing.s2),
             ProfileTopBar(title: 'Notification', topInset: topInset),
             Expanded(
-              child: _loading
+              child: settings == null
                   ? const Center(
-                      child: CircularProgressIndicator(
-                        color: AppColors.brand,
-                      ),
+                      child: CircularProgressIndicator(color: AppColors.brand),
                     )
                   : Column(
                       children: [
@@ -94,9 +73,9 @@ class _NotificationSettingsScreenState
                           label: 'Email notification',
                           subtext:
                               'Receive email notification to your registered email address',
-                          value: settings!.emailEnabled,
+                          value: settings.emailNotification,
                           onChanged: (v) => _onChanged(
-                            settings.copyWith(emailEnabled: v),
+                            settings.copyWith(emailNotification: v),
                           ),
                         ),
                         Divider(
@@ -107,9 +86,9 @@ class _NotificationSettingsScreenState
                           label: 'In-app notification',
                           subtext:
                               'Receive a notification on screen regardless of which page you are on',
-                          value: settings.inAppEnabled,
+                          value: settings.pushNotification,
                           onChanged: (v) => _onChanged(
-                            settings.copyWith(inAppEnabled: v),
+                            settings.copyWith(pushNotification: v),
                           ),
                         ),
                       ],

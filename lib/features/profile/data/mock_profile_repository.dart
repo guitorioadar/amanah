@@ -50,8 +50,8 @@ class MockProfileRepository implements ProfileRepository {
   Future<NotificationSettings> notificationSettings() async {
     final prefs = await SharedPreferences.getInstance();
     return NotificationSettings(
-      emailEnabled: prefs.getBool('$_prefsPrefix.email') ?? true,
-      inAppEnabled: prefs.getBool('$_prefsPrefix.inApp') ?? false,
+      emailNotification: prefs.getBool('$_prefsPrefix.email') ?? true,
+      pushNotification: prefs.getBool('$_prefsPrefix.push') ?? true,
     );
   }
 
@@ -61,7 +61,7 @@ class MockProfileRepository implements ProfileRepository {
   ) async {
     await Future<void>.delayed(const Duration(milliseconds: 200));
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('$_prefsPrefix.email', settings.emailEnabled);
-    await prefs.setBool('$_prefsPrefix.inApp', settings.inAppEnabled);
+    await prefs.setBool('$_prefsPrefix.email', settings.emailNotification);
+    await prefs.setBool('$_prefsPrefix.push', settings.pushNotification);
   }
 }

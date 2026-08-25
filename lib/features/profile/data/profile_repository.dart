@@ -50,19 +50,33 @@ abstract interface class ProfileRepository {
   );
 }
 
-/// The two toggles on the Notification screen.
+/// The two master toggles on the Notification screen (email + in-app/push).
+/// The API carries additional per-event flags, but only these two are read
+/// and written by the app.
 class NotificationSettings {
   const NotificationSettings({
-    required this.emailEnabled,
-    required this.inAppEnabled,
+    required this.emailNotification,
+    required this.pushNotification,
   });
 
-  final bool emailEnabled;
-  final bool inAppEnabled;
-
-  NotificationSettings copyWith({bool? emailEnabled, bool? inAppEnabled}) =>
+  factory NotificationSettings.fromJson(Map<String, dynamic> json) =>
       NotificationSettings(
-        emailEnabled: emailEnabled ?? this.emailEnabled,
-        inAppEnabled: inAppEnabled ?? this.inAppEnabled,
+        emailNotification: json['email_notification'] as bool? ?? true,
+        pushNotification: json['push_notification'] as bool? ?? true,
+      );
+
+  /// The email master toggle.
+  final bool emailNotification;
+
+  /// The in-app / push master toggle.
+  final bool pushNotification;
+
+  NotificationSettings copyWith({
+    bool? emailNotification,
+    bool? pushNotification,
+  }) =>
+      NotificationSettings(
+        emailNotification: emailNotification ?? this.emailNotification,
+        pushNotification: pushNotification ?? this.pushNotification,
       );
 }

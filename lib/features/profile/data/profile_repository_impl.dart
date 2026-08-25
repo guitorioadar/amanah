@@ -3,9 +3,9 @@ import 'package:amanah/features/auth/data/models/user.dart';
 import 'package:amanah/features/profile/data/profile_repository.dart';
 import 'package:dio/dio.dart';
 
-/// Real profile repository. Only `updateProfile` has a live endpoint so far
-/// (`PUT /auth/profile`); account deletion and notification preferences are
-/// delegated to [_fallback] until their APIs ship.
+/// Real profile repository. `updateProfile` (`PUT /auth/profile`), the avatar
+/// upload, and the notification preferences (`GET`/`PUT /notifications/settings`)
+/// are live; account deletion is delegated to [_fallback] until its API ships.
 class ProfileRepositoryImpl implements ProfileRepository {
   ProfileRepositoryImpl(this._dio, this._fallback);
 
@@ -56,10 +56,33 @@ class ProfileRepositoryImpl implements ProfileRepository {
   Future<void> deleteAccount() => _fallback.deleteAccount();
 
   @override
-  Future<NotificationSettings> notificationSettings() =>
-      _fallback.notificationSettings();
+  Future<NotificationSettings> notificationSettings() async {
+    try {
+      final res = await _dio.get<Map<String, dynamic>>(
+        '/notifications/settings',
+      );
+      return NotificationSettings.fromJson(
+        res.data!['data'] as Map<String, dynamic>,
+      );
+    } on DioException catch (e) {
+      throw ApiException.fromDio(e);
+    }
+  }
 
   @override
-  Future<void> updateNotificationSettings(NotificationSettings settings) =>
-      _fallback.updateNotificationSettings(settings);
+  Future<void> updateNotificationSettings(NotificationSettings settings) async {
+    try {
+      // Only the two master toggles are user-editable; the per-event flags
+      // are left untouched server-side.
+      await _dio.put<Map<String, dynamic>>(
+        '/notifications/settings',
+        data: {
+          'email_notification': settings.emailNotification,
+          'push_notification': settings.pushNotification,
+        },
+      );
+    } on DioException catch (e) {
+      throw ApiException.fromDio(e);
+    }
+  }
 }
