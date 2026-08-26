@@ -111,7 +111,8 @@ class AuditRepositoryImpl implements AuditRepository {
       await _dio.post<Map<String, dynamic>>(
         '/my-audits/$eventId/complete',
         data: {
-          if (trimmed != null && trimmed.isNotEmpty) 'note': trimmed,
+          if (trimmed != null && trimmed.isNotEmpty)
+            'completion_notes': trimmed,
         },
       );
     } on DioException catch (e) {
