@@ -1,6 +1,7 @@
 import 'package:amanah/features/audits/presentation/screens/audit_details_screen.dart';
 import 'package:amanah/features/audits/presentation/screens/audits_screen.dart';
 import 'package:amanah/features/audits/presentation/screens/observation_list_screen.dart';
+import 'package:amanah/features/auth/presentation/screens/deleting_account_screen.dart';
 import 'package:amanah/features/auth/presentation/screens/forgot_password_screen.dart';
 import 'package:amanah/features/auth/presentation/screens/otp_verification_screen.dart';
 import 'package:amanah/features/auth/presentation/screens/password_updated_screen.dart';
@@ -56,8 +57,27 @@ GoRouter buildRouter() {
       ),
       GoRoute(
         path: '/verify-otp',
-        builder: (context, state) => OtpVerificationScreen(
-          email: state.extra as String? ?? 'jenniferanniston@gmail.com',
+        builder: (context, state) {
+          // Forgot-password passes the email as a bare String; delete-account
+          // passes { email, purpose }.
+          final extra = state.extra;
+          if (extra is Map) {
+            return OtpVerificationScreen(
+              email: extra['email'] as String? ?? '',
+              purpose: extra['purpose'] as OtpPurpose? ??
+                  OtpPurpose.passwordReset,
+            );
+          }
+          return OtpVerificationScreen(
+            email: extra as String? ?? 'jenniferanniston@gmail.com',
+          );
+        },
+      ),
+      GoRoute(
+        path: '/deleting-account',
+        builder: (context, state) => DeletingAccountScreen(
+          otpCode: state.extra as String? ?? '',
+          onDone: () => context.go('/sign-in'),
         ),
       ),
       GoRoute(

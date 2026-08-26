@@ -5,8 +5,9 @@ import 'package:amanah/features/profile/presentation/providers/profile_providers
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-/// Opens the Delete account confirmation modal. Resolves `true` when the
-/// deletion was accepted, `false`/null when dismissed or failed.
+/// Opens the Delete account confirmation modal. On confirm it emails the OTP
+/// and resolves `true` (the caller then routes to code entry); `false`/null on
+/// dismiss or if sending the code failed.
 Future<bool> showDeleteAccountSheet(BuildContext context) {
   return showModalBottomSheet<bool>(
     context: context,
@@ -34,7 +35,7 @@ class _DeleteAccountSheetState extends ConsumerState<_DeleteAccountSheet> {
   Future<void> _submit() async {
     setState(() => _deleting = true);
     try {
-      await ref.read(profileRepositoryProvider).deleteAccount();
+      await ref.read(profileRepositoryProvider).sendDeleteAccountOtp();
       if (!mounted) return;
       Navigator.of(context).pop(true);
     } on Object catch (_) {
@@ -43,7 +44,7 @@ class _DeleteAccountSheetState extends ConsumerState<_DeleteAccountSheet> {
         ..hideCurrentSnackBar()
         ..showSnackBar(
           const SnackBar(
-            content: Text("Couldn't delete account. Try again."),
+            content: Text("Couldn't send the code. Try again."),
           ),
         );
     } finally {

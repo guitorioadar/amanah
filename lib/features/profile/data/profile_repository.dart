@@ -37,9 +37,14 @@ abstract interface class ProfileRepository {
   /// Uploads a new avatar (multipart) and returns its public URL.
   Future<String> updateProfilePicture(String filePath);
 
-  /// Permanently deletes the account. The session is invalidated afterwards.
-  /// No re-auth is required — the confirmation modal is the guard (per design).
-  Future<void> deleteAccount();
+  /// Emails a one-time code to the signed-in user before deletion
+  /// (`POST /auth/delete-account/send-otp`).
+  Future<void> sendDeleteAccountOtp();
+
+  /// Permanently deletes the account, verifying [otpCode]
+  /// (`POST /auth/delete-account`). Throws on an invalid/expired code. The
+  /// session is torn down by the caller afterwards.
+  Future<void> deleteAccount(String otpCode);
 
   /// Fetches the notification preferences.
   Future<NotificationSettings> notificationSettings();

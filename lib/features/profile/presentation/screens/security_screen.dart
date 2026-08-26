@@ -1,16 +1,22 @@
+import 'dart:async';
+
 import 'package:amanah/core/theme/app_colors.dart';
 import 'package:amanah/core/theme/app_spacing.dart';
 import 'package:amanah/core/theme/app_system_ui.dart';
 import 'package:amanah/core/theme/app_text_styles.dart';
+import 'package:amanah/features/auth/presentation/providers/session_providers.dart';
+import 'package:amanah/features/auth/presentation/screens/otp_verification_screen.dart';
 import 'package:amanah/features/profile/presentation/widgets/delete_account_sheet.dart';
 import 'package:amanah/features/profile/presentation/widgets/profile_top_bar.dart';
 import 'package:amanah/features/profile/presentation/widgets/update_password_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 /// Sign in & Security: a "Change password" section with an outlined action,
 /// then a red-outlined "Delete account" danger zone. Each opens its modal.
-class SecurityScreen extends StatelessWidget {
+class SecurityScreen extends ConsumerWidget {
   const SecurityScreen({super.key});
 
   Future<void> _updatePassword(BuildContext context) async {
@@ -24,20 +30,21 @@ class SecurityScreen extends StatelessWidget {
     }
   }
 
-  Future<void> _deleteAccount(BuildContext context) async {
-    final deleted = await showDeleteAccountSheet(context);
-    if (deleted && context.mounted) {
-      // Session teardown lands with the real API; for now just confirm.
-      ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(
-          const SnackBar(content: Text('Account deleted (demo)')),
-        );
-    }
+  Future<void> _deleteAccount(BuildContext context, WidgetRef ref) async {
+    // Confirm → the sheet emails an OTP → verify the code → delete.
+    final sent = await showDeleteAccountSheet(context);
+    if (!sent || !context.mounted) return;
+    final email = ref.read(currentUserProvider)?.email ?? '';
+    unawaited(
+      context.push(
+        '/verify-otp',
+        extra: {'email': email, 'purpose': OtpPurpose.deleteAccount},
+      ),
+    );
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final topInset = MediaQuery.of(context).viewPadding.top;
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
@@ -104,7 +111,7 @@ class SecurityScreen extends StatelessWidget {
                     SizedBox(
                       height: 48,
                       child: OutlinedButton(
-                        onPressed: () => _deleteAccount(context),
+                        onPressed: () => _deleteAccount(context, ref),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: AppColors.textDanger,
                           side: const BorderSide(color: AppColors.borderDanger),

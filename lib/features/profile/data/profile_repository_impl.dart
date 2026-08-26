@@ -4,13 +4,12 @@ import 'package:amanah/features/profile/data/profile_repository.dart';
 import 'package:dio/dio.dart';
 
 /// Real profile repository. `updateProfile` (`PUT /auth/profile`), the avatar
-/// upload, and the notification preferences (`GET`/`PUT /notifications/settings`)
-/// are live; account deletion is delegated to [_fallback] until its API ships.
+/// upload, the notification preferences (`GET`/`PUT /notifications/settings`),
+/// and OTP-gated account deletion are all live.
 class ProfileRepositoryImpl implements ProfileRepository {
-  ProfileRepositoryImpl(this._dio, this._fallback);
+  ProfileRepositoryImpl(this._dio);
 
   final Dio _dio;
-  final ProfileRepository _fallback;
 
   @override
   Future<User> updateProfile(ProfileUpdate update) async {
@@ -53,7 +52,25 @@ class ProfileRepositoryImpl implements ProfileRepository {
   }
 
   @override
-  Future<void> deleteAccount() => _fallback.deleteAccount();
+  Future<void> sendDeleteAccountOtp() async {
+    try {
+      await _dio.post<Map<String, dynamic>>('/auth/delete-account/send-otp');
+    } on DioException catch (e) {
+      throw ApiException.fromDio(e);
+    }
+  }
+
+  @override
+  Future<void> deleteAccount(String otpCode) async {
+    try {
+      await _dio.post<Map<String, dynamic>>(
+        '/auth/delete-account',
+        data: {'otp_code': otpCode},
+      );
+    } on DioException catch (e) {
+      throw ApiException.fromDio(e);
+    }
+  }
 
   @override
   Future<NotificationSettings> notificationSettings() async {

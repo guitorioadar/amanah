@@ -8,14 +8,24 @@ import 'package:amanah/core/utils/email_mask.dart';
 import 'package:amanah/features/auth/presentation/providers/auth_providers.dart';
 import 'package:amanah/features/auth/presentation/widgets/auth_scaffold.dart';
 import 'package:amanah/features/auth/presentation/widgets/otp_input.dart';
+import 'package:amanah/features/profile/presentation/providers/profile_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+/// Why the OTP screen is being shown — decides the resend endpoint and where a
+/// verified code goes next.
+enum OtpPurpose { passwordReset, deleteAccount }
+
 class OtpVerificationScreen extends ConsumerStatefulWidget {
-  const OtpVerificationScreen({required this.email, super.key});
+  const OtpVerificationScreen({
+    required this.email,
+    this.purpose = OtpPurpose.passwordReset,
+    super.key,
+  });
 
   final String email;
+  final OtpPurpose purpose;
 
   @override
   ConsumerState<OtpVerificationScreen> createState() =>
@@ -35,12 +45,18 @@ class _OtpVerificationScreenState
       setState(() => _error = 'Enter the 6-digit code.');
       return;
     }
-    // No verify endpoint — the OTP is checked by the reset-password call on the
-    // next screen. Carry the code forward.
+    // No verify endpoint — the OTP is checked by the call on the next screen
+    // (reset-password, or the account deletion). Carry the code forward.
+    final next = switch (widget.purpose) {
+      OtpPurpose.passwordReset => '/reset-password',
+      OtpPurpose.deleteAccount => '/deleting-account',
+    };
     unawaited(
       context.push(
-        '/reset-password',
-        extra: {'email': widget.email, 'code': _code},
+        next,
+        extra: widget.purpose == OtpPurpose.deleteAccount
+            ? _code
+            : {'email': widget.email, 'code': _code},
       ),
     );
   }
@@ -51,7 +67,13 @@ class _OtpVerificationScreenState
       _error = null;
     });
     try {
-      await ref.read(authRepositoryProvider).requestPasswordReset(widget.email);
+      if (widget.purpose == OtpPurpose.deleteAccount) {
+        await ref.read(profileRepositoryProvider).sendDeleteAccountOtp();
+      } else {
+        await ref
+            .read(authRepositoryProvider)
+            .requestPasswordReset(widget.email);
+      }
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('A new code has been sent.')),
@@ -125,10 +147,16 @@ class _OtpVerificationScreenState
           onPressed: _submit,
         ),
         const SizedBox(height: AppSpacing.s3),
-        AuthTextLink(
-          label: 'Back to login',
-          onPressed: _loading ? null : () => context.go('/sign-in'),
-        ),
+        if (widget.purpose == OtpPurpose.deleteAccount)
+          AuthTextLink(
+            label: 'Cancel',
+            onPressed: _loading ? null : () => context.pop(),
+          )
+        else
+          AuthTextLink(
+            label: 'Back to login',
+            onPressed: _loading ? null : () => context.go('/sign-in'),
+          ),
       ],
     );
   }

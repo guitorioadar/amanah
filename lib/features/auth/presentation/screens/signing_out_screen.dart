@@ -8,6 +8,7 @@ import 'package:amanah/features/auth/presentation/providers/session_providers.da
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 /// Transitional "Signing out…" screen. Clears the session, then routes to
 /// sign-in. Blue gradient per design.
@@ -53,6 +54,8 @@ class _SigningOutScreenState extends ConsumerState<SigningOutScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
+                SvgPicture.asset('assets/vectors/Vectors-5.svg', width: 140),
+                const SizedBox(height: AppSpacing.s7),
                 Text(
                   'Signing out…',
                   style: AppText.headingL.copyWith(

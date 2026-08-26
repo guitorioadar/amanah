@@ -42,7 +42,12 @@ class MockProfileRepository implements ProfileRepository {
   }
 
   @override
-  Future<void> deleteAccount() async {
+  Future<void> sendDeleteAccountOtp() async {
+    await Future<void>.delayed(const Duration(milliseconds: 600));
+  }
+
+  @override
+  Future<void> deleteAccount(String otpCode) async {
     await Future<void>.delayed(const Duration(milliseconds: 600));
   }
 
