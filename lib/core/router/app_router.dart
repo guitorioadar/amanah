@@ -8,6 +8,7 @@ import 'package:amanah/features/auth/presentation/screens/set_new_password_scree
 import 'package:amanah/features/auth/presentation/screens/sign_in_screen.dart';
 import 'package:amanah/features/auth/presentation/screens/signing_out_screen.dart';
 import 'package:amanah/features/home/presentation/screens/home_screen.dart';
+import 'package:amanah/features/notifications/presentation/screens/notifications_screen.dart';
 import 'package:amanah/features/profile/presentation/screens/legal_screen.dart';
 import 'package:amanah/features/profile/presentation/screens/notification_settings_screen.dart';
 import 'package:amanah/features/profile/presentation/screens/personal_info_screen.dart';
@@ -70,6 +71,11 @@ GoRouter buildRouter() {
       GoRoute(
         path: '/password-updated',
         builder: (context, state) => const PasswordUpdatedScreen(),
+      ),
+      // Notifications feed (full-screen over the shell; opened from the bell).
+      GoRoute(
+        path: '/notifications',
+        builder: (context, state) => const NotificationsScreen(),
       ),
       // Profile subscreens (full-screen over the shell).
       GoRoute(

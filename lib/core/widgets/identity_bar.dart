@@ -2,7 +2,9 @@ import 'package:amanah/core/theme/app_colors.dart';
 import 'package:amanah/core/theme/app_spacing.dart';
 import 'package:amanah/core/theme/app_text_styles.dart';
 import 'package:amanah/core/widgets/app_avatar.dart';
+import 'package:amanah/features/notifications/presentation/providers/notification_providers.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
@@ -54,15 +56,17 @@ class IdentityBar extends StatelessWidget {
   }
 }
 
-/// Notification bell with an unread badge. Tap wiring lands with the
-/// Notifications screen (M3).
-class _BellButton extends StatelessWidget {
+/// Notification bell. Opens the feed; shows a red dot only when there are
+/// unread notifications ([unreadCountProvider]).
+class _BellButton extends ConsumerWidget {
   const _BellButton();
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final hasUnread =
+        (ref.watch(unreadCountProvider).value ?? 0) > 0;
     return GestureDetector(
-      onTap: () {}, // TODO(M3): context.push('/notifications')
+      onTap: () => context.push('/notifications'),
       behavior: HitTestBehavior.opaque,
       child: SizedBox(
         width: 36,
@@ -88,19 +92,20 @@ class _BellButton extends StatelessWidget {
                 ),
               ),
             ),
-            Positioned(
-              top: 0,
-              right: 4,
-              child: Container(
-                width: 10,
-                height: 10,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: AppColors.iconNotification,
-                  border: Border.all(color: AppColors.bgSolid, width: 2),
+            if (hasUnread)
+              Positioned(
+                top: 0,
+                right: 4,
+                child: Container(
+                  width: 10,
+                  height: 10,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: AppColors.iconNotification,
+                    border: Border.all(color: AppColors.bgSolid, width: 2),
+                  ),
                 ),
               ),
-            ),
           ],
         ),
       ),
