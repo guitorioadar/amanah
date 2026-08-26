@@ -1,6 +1,9 @@
 import 'package:amanah/core/theme/app_colors.dart';
 import 'package:amanah/core/theme/app_text_styles.dart';
+import 'package:amanah/features/expenses/presentation/providers/expense_providers.dart';
+import 'package:amanah/features/expenses/presentation/widgets/new_expense_sheet.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
@@ -92,19 +95,24 @@ class _TabSpec {
 }
 
 /// Global "+ Expense" action. Fixed 98×36 pill per design (smaller than a
-/// standard extended FAB, so it's built from [Material] directly).
-class _ExpenseButton extends StatelessWidget {
+/// standard extended FAB, so it's built from [Material] directly). Opens the
+/// new-expense sheet (dated today) and refreshes the expense list on success.
+class _ExpenseButton extends ConsumerWidget {
   const _ExpenseButton();
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Material(
       color: AppColors.bgBrandBold,
       elevation: 3,
       shape: const StadiumBorder(),
       child: InkWell(
         customBorder: const StadiumBorder(),
-        onTap: () {}, // wired in M-expenses
+        onTap: () async {
+          final created =
+              await showNewExpenseSheet(context, date: DateTime.now());
+          if (created) ref.invalidate(expenseGroupsProvider);
+        },
         child: SizedBox(
           width: 98,
           height: 36,

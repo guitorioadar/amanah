@@ -24,9 +24,14 @@ class _AmanahAppState extends State<AmanahApp> {
       routerConfig: _router,
       // App-wide default: dark icons for light screens. Screens whose top is
       // dark (navy headers, gradients) override with AppSystemUi.light.
-      builder: (context, child) => AnnotatedRegion<SystemUiOverlayStyle>(
-        value: AppSystemUi.dark,
-        child: child!,
+      // Also cap the OS font scale at 1.0 so a device set to a large text size
+      // doesn't blow up the fixed design layouts.
+      builder: (context, child) => MediaQuery.withClampedTextScaling(
+        maxScaleFactor: 1,
+        child: AnnotatedRegion<SystemUiOverlayStyle>(
+          value: AppSystemUi.dark,
+          child: child!,
+        ),
       ),
     );
   }

@@ -7,6 +7,8 @@ import 'package:amanah/features/auth/presentation/screens/password_updated_scree
 import 'package:amanah/features/auth/presentation/screens/set_new_password_screen.dart';
 import 'package:amanah/features/auth/presentation/screens/sign_in_screen.dart';
 import 'package:amanah/features/auth/presentation/screens/signing_out_screen.dart';
+import 'package:amanah/features/expenses/presentation/screens/expense_detail_screen.dart';
+import 'package:amanah/features/expenses/presentation/screens/expenses_screen.dart';
 import 'package:amanah/features/home/presentation/screens/home_screen.dart';
 import 'package:amanah/features/notifications/presentation/screens/notifications_screen.dart';
 import 'package:amanah/features/profile/presentation/screens/legal_screen.dart';
@@ -98,6 +100,13 @@ GoRouter buildRouter() {
         path: '/profile/terms',
         builder: (context, state) => const LegalScreen.terms(),
       ),
+      // Expense date-group detail (full-screen over the shell).
+      GoRoute(
+        path: '/expense/:date',
+        builder: (context, state) => ExpenseDetailScreen(
+          dateKey: state.pathParameters['date']!,
+        ),
+      ),
       // Full-screen over the shell (own back button, no bottom nav).
       GoRoute(
         path: '/audit/:id',
@@ -140,7 +149,14 @@ GoRouter buildRouter() {
               ),
             ],
           ),
-          _branch('/expenses', 'Expenses'),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/expenses',
+                builder: (context, state) => const ExpensesScreen(),
+              ),
+            ],
+          ),
           StatefulShellBranch(
             routes: [
               GoRoute(
@@ -150,17 +166,6 @@ GoRouter buildRouter() {
             ],
           ),
         ],
-      ),
-    ],
-  );
-}
-
-StatefulShellBranch _branch(String path, String title) {
-  return StatefulShellBranch(
-    routes: [
-      GoRoute(
-        path: path,
-        builder: (context, state) => PlaceholderTab(title),
       ),
     ],
   );
