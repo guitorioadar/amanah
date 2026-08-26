@@ -28,8 +28,9 @@ abstract interface class AuditRepository {
     List<int> deleteFileIds,
   });
 
-  /// Finalize the audit — `POST /my-audits/{eventId}/complete`.
-  Future<void> completeAudit(int eventId);
+  /// Finalize the audit — `POST /my-audits/{eventId}/complete`. Optional
+  /// [note] is attached to the completion.
+  Future<void> completeAudit(int eventId, {String? note});
 }
 
 /// Real implementation — talks to the backend over Dio.
@@ -104,9 +105,15 @@ class AuditRepositoryImpl implements AuditRepository {
   }
 
   @override
-  Future<void> completeAudit(int eventId) async {
+  Future<void> completeAudit(int eventId, {String? note}) async {
     try {
-      await _dio.post<Map<String, dynamic>>('/my-audits/$eventId/complete');
+      final trimmed = note?.trim();
+      await _dio.post<Map<String, dynamic>>(
+        '/my-audits/$eventId/complete',
+        data: {
+          if (trimmed != null && trimmed.isNotEmpty) 'note': trimmed,
+        },
+      );
     } on DioException catch (e) {
       throw ApiException.fromDio(e);
     }
@@ -202,7 +209,7 @@ class MockAuditRepository implements AuditRepository {
   }
 
   @override
-  Future<void> completeAudit(int eventId) => _latency();
+  Future<void> completeAudit(int eventId, {String? note}) => _latency();
 
   static final _seed = <Audit>[
     Audit(

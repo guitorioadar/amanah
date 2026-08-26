@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:amanah/core/network/api_exception.dart';
 import 'package:amanah/core/theme/app_colors.dart';
 import 'package:amanah/core/theme/app_spacing.dart';
 import 'package:amanah/core/theme/app_system_ui.dart';
@@ -12,6 +11,7 @@ import 'package:amanah/core/widgets/progress_ring.dart';
 import 'package:amanah/core/widgets/skeletons/audit_details_skeleton.dart';
 import 'package:amanah/features/audits/data/models/audit_detail.dart';
 import 'package:amanah/features/audits/presentation/providers/audit_providers.dart';
+import 'package:amanah/features/audits/presentation/widgets/complete_audit_sheet.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -357,39 +357,17 @@ class _BodyState extends ConsumerState<_Body> {
   }
 
   Future<void> _complete() async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Complete audit?'),
-        content: const Text(
-          "This finalizes every observation. You can't edit them afterwards.",
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Complete'),
-          ),
-        ],
-      ),
-    );
-    if (confirmed != true) return;
-
     setState(() => _completing = true);
-    try {
-      await ref.read(auditRepositoryProvider).completeAudit(widget.detail.id);
-      ref.invalidate(auditDetailProvider(widget.detail.id));
-      if (!mounted) return;
-      _toast('Audit completed.');
-      setState(() => _completing = false);
-    } on ApiException catch (e) {
-      if (!mounted) return;
-      setState(() => _completing = false);
-      _toast(e.message, error: true);
-    }
+    final done =
+        await showCompleteAuditSheet(context, eventId: widget.detail.id);
+    if (!mounted) return;
+    setState(() => _completing = false);
+    if (!done) return;
+
+    // Completion (+ any error toast) happened inside the sheet; refresh the
+    // now-finalized detail and confirm.
+    ref.invalidate(auditDetailProvider(widget.detail.id));
+    _toast('Audit completed.');
   }
 
   void _toast(String message, {bool error = false}) {
