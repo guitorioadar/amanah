@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:amanah/core/theme/app_colors.dart';
 import 'package:amanah/core/theme/app_spacing.dart';
 import 'package:amanah/core/theme/app_system_ui.dart';
@@ -6,6 +8,8 @@ import 'package:amanah/core/widgets/app_tabs.dart';
 import 'package:amanah/core/widgets/skeletons/notifications_skeleton.dart';
 import 'package:amanah/features/notifications/data/models/app_notification.dart';
 import 'package:amanah/features/notifications/presentation/providers/notification_providers.dart';
+import 'package:amanah/features/notifications/presentation/widgets/notification_badge.dart';
+import 'package:amanah/features/notifications/presentation/widgets/notification_detail_sheet.dart';
 import 'package:amanah/features/profile/presentation/widgets/profile_top_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -115,9 +119,13 @@ class _NotificationList extends ConsumerWidget {
             for (var j = 0; j < group.items.length; j++) ...[
               _NotificationTile(
                 item: group.items[j],
-                onTap: () => ref
-                    .read(notificationsProvider.notifier)
-                    .markRead(group.items[j].id),
+                onTap: () {
+                  final item = group.items[j];
+                  unawaited(
+                    ref.read(notificationsProvider.notifier).markRead(item.id),
+                  );
+                  unawaited(showNotificationDetail(context, item));
+                },
               ),
               if (j != group.items.length - 1)
                 Divider(
@@ -177,7 +185,10 @@ class _NotificationTile extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _Badge(alert: item.isAlert),
+            Hero(
+              tag: notificationBadgeTag(item.id),
+              child: NotificationBadge(alert: item.isAlert),
+            ),
             const SizedBox(width: AppSpacing.s3),
             Expanded(
               child: Column(
@@ -222,34 +233,6 @@ class _NotificationTile extends StatelessWidget {
                   : null,
             ),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-class _Badge extends StatelessWidget {
-  const _Badge({required this.alert});
-
-  final bool alert;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 36,
-      height: 36,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: alert ? AppColors.ringWarning : AppColors.brand,
-      ),
-      child: Center(
-        child: SvgPicture.asset(
-          'assets/icons/fill/ClipboardText.svg',
-          width: 18,
-          colorFilter: const ColorFilter.mode(
-            AppColors.iconInverse,
-            BlendMode.srcIn,
-          ),
         ),
       ),
     );
