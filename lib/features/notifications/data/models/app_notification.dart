@@ -45,6 +45,11 @@ class AppNotification {
 
   bool get isUnread => readAt == null;
 
+  /// Only participant-change notifications are personal and deletable; every
+  /// other type is shared/broadcast and can only be marked read
+  /// (`DELETE /notifications/{id}` 404s on them).
+  bool get canDelete => type == 'audit_participant_change';
+
   /// True for overdue / missed / expired / rejected events — the amber badge
   /// variant in the design. Everything else uses the blue "assignment" badge.
   bool get isAlert =>

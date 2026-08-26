@@ -18,6 +18,10 @@ abstract interface class NotificationRepository {
 
   /// `POST /notifications/mark-all-read`.
   Future<void> markAllRead();
+
+  /// `DELETE /notifications/{id}`. Only personal notifications can be deleted;
+  /// shared/system ones 404.
+  Future<void> delete(int id);
 }
 
 /// Real implementation — talks to the backend over Dio.
@@ -63,6 +67,15 @@ class NotificationRepositoryImpl implements NotificationRepository {
   Future<void> markAllRead() async {
     try {
       await _dio.post<Map<String, dynamic>>('/notifications/mark-all-read');
+    } on DioException catch (e) {
+      throw ApiException.fromDio(e);
+    }
+  }
+
+  @override
+  Future<void> delete(int id) async {
+    try {
+      await _dio.delete<Map<String, dynamic>>('/notifications/$id');
     } on DioException catch (e) {
       throw ApiException.fromDio(e);
     }

@@ -14,6 +14,7 @@ import 'package:amanah/features/profile/presentation/widgets/profile_top_bar.dar
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
 
@@ -31,10 +32,24 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
   /// 0 = Unread, 1 = All notifications.
   int _tab = 0;
 
+  Future<void> _markAllRead() async {
+    try {
+      await ref.read(notificationsProvider.notifier).markAllRead();
+    } on Object catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          const SnackBar(content: Text("Couldn't mark all as read")),
+        );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final topInset = MediaQuery.of(context).viewPadding.top;
     final async = ref.watch(notificationsProvider);
+    final hasUnread = (async.value ?? const []).any((n) => n.isUnread);
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: AppSystemUi.dark,
@@ -55,7 +70,32 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Text('All notifications', style: AppText.headingL),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          'All notifications',
+                          style: AppText.headingL,
+                        ),
+                      ),
+                      if (hasUnread)
+                        GestureDetector(
+                          onTap: () => unawaited(_markAllRead()),
+                          behavior: HitTestBehavior.opaque,
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              vertical: AppSpacing.s1,
+                            ),
+                            child: Text(
+                              'Mark all as read',
+                              style: AppText.bodyMMedium.copyWith(
+                                color: AppColors.textBrand,
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
                   const SizedBox(height: AppSpacing.s5),
                   AppTabs(
                     labels: const ['Unread', 'All notifications'],
@@ -103,41 +143,126 @@ class _NotificationList extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final groups = _groupByRecency(items);
 
-    return ListView.builder(
-      // Always scrollable so pull-to-refresh works even with a short list.
-      physics: const AlwaysScrollableScrollPhysics(),
-      padding: EdgeInsets.only(
-        bottom: MediaQuery.of(context).viewPadding.bottom + AppSpacing.s6,
-      ),
-      itemCount: groups.length,
-      itemBuilder: (context, i) {
-        final group = groups[i];
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            _SectionHeader(label: group.label),
-            for (var j = 0; j < group.items.length; j++) ...[
-              _NotificationTile(
-                item: group.items[j],
-                onTap: () {
-                  final item = group.items[j];
-                  unawaited(
-                    ref.read(notificationsProvider.notifier).markRead(item.id),
-                  );
-                  unawaited(showNotificationDetail(context, item));
-                },
-              ),
-              if (j != group.items.length - 1)
-                Divider(
-                  height: 1,
-                  indent: AppSpacing.s4,
-                  endIndent: AppSpacing.s4,
-                  color: AppColors.borderDefault,
+    return SlidableAutoCloseBehavior(
+      child: ListView.builder(
+        // Always scrollable so pull-to-refresh works even with a short list.
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewPadding.bottom + AppSpacing.s6,
+        ),
+        itemCount: groups.length,
+        itemBuilder: (context, i) {
+          final group = groups[i];
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _SectionHeader(label: group.label),
+              for (var j = 0; j < group.items.length; j++) ...[
+                _SwipeableTile(
+                  key: ValueKey(group.items[j].id),
+                  item: group.items[j],
+                  onTap: () {
+                    final item = group.items[j];
+                    unawaited(
+                      ref
+                          .read(notificationsProvider.notifier)
+                          .markRead(item.id),
+                    );
+                    unawaited(showNotificationDetail(context, item));
+                  },
                 ),
+                if (j != group.items.length - 1)
+                  Divider(
+                    height: 1,
+                    indent: AppSpacing.s4,
+                    endIndent: AppSpacing.s4,
+                    color: AppColors.borderDefault,
+                  ),
+              ],
             ],
-          ],
+          );
+        },
+      ),
+    );
+  }
+}
+
+/// A notification row that swipes left to reveal a Delete action. Deletable
+/// notifications get a red, tappable delete; shared/system ones show a
+/// disabled (greyed) delete so the affordance is discoverable but inert.
+class _SwipeableTile extends ConsumerWidget {
+  const _SwipeableTile({
+    required this.item,
+    required this.onTap,
+    super.key,
+  });
+
+  final AppNotification item;
+  final VoidCallback onTap;
+
+  Future<void> _delete(BuildContext context, WidgetRef ref) async {
+    try {
+      await ref.read(notificationsProvider.notifier).delete(item.id);
+    } on Object catch (_) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          const SnackBar(content: Text("Couldn't delete notification")),
         );
-      },
+    }
+  }
+
+  void _showCannotDelete(BuildContext context) {
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        const SnackBar(content: Text('This notification can’t be deleted')),
+      );
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final deletable = item.canDelete;
+    return Slidable(
+      groupTag: 'notifications',
+      endActionPane: ActionPane(
+        motion: const DrawerMotion(),
+        extentRatio: 0.26,
+        children: [
+          CustomSlidableAction(
+            onPressed: (_) => deletable
+                ? unawaited(_delete(context, ref))
+                : _showCannotDelete(context),
+            backgroundColor: deletable
+                ? AppColors.bgDanger
+                : AppColors.bgHovered,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                SvgPicture.asset(
+                  'assets/icons/line/Trash.svg',
+                  width: 22,
+                  colorFilter: ColorFilter.mode(
+                    deletable ? AppColors.iconDanger : AppColors.iconDisabled,
+                    BlendMode.srcIn,
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.s1),
+                Text(
+                  'Delete',
+                  style: AppText.bodySMedium.copyWith(
+                    color: deletable
+                        ? AppColors.textDanger
+                        : AppColors.textSubtlest,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+      child: _NotificationTile(item: item, onTap: onTap),
     );
   }
 }
@@ -196,20 +321,23 @@ class _NotificationTile extends StatelessWidget {
                 children: [
                   Text(
                     item.title,
-                    style: AppText.bodyLSemiBold
-                        .copyWith(color: AppColors.textDefault),
+                    style: AppText.bodyLSemiBold.copyWith(
+                      color: AppColors.textDefault,
+                    ),
                   ),
                   const SizedBox(height: AppSpacing.s1),
                   Text(
                     item.message,
-                    style: AppText.bodyMRegular
-                        .copyWith(color: AppColors.textSubtle),
+                    style: AppText.bodyMRegular.copyWith(
+                      color: AppColors.textSubtle,
+                    ),
                   ),
                   const SizedBox(height: AppSpacing.s2),
                   Text(
                     _dateFmt.format(item.createdAt.toLocal()),
-                    style: AppText.bodySRegular
-                        .copyWith(color: AppColors.textSubtlest),
+                    style: AppText.bodySRegular.copyWith(
+                      color: AppColors.textSubtlest,
+                    ),
                   ),
                 ],
               ),
@@ -277,8 +405,7 @@ class _ErrorState extends StatelessWidget {
           child: Text(
             "Couldn't load notifications. Pull to refresh.",
             textAlign: TextAlign.center,
-            style:
-                AppText.bodyMRegular.copyWith(color: AppColors.textSubtlest),
+            style: AppText.bodyMRegular.copyWith(color: AppColors.textSubtlest),
           ),
         ),
       ],

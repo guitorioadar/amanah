@@ -72,6 +72,21 @@ class NotificationsNotifier extends AsyncNotifier<List<AppNotification>> {
       rethrow;
     }
   }
+
+  /// Optimistically removes one notification, reverting on failure.
+  Future<void> delete(int id) async {
+    final current = state.value;
+    if (current == null) return;
+
+    state = AsyncData([for (final n in current) if (n.id != id) n]);
+    try {
+      await ref.read(notificationRepositoryProvider).delete(id);
+      ref.invalidate(unreadCountProvider);
+    } on Object {
+      state = AsyncData(current);
+      rethrow;
+    }
+  }
 }
 
 /// Unread badge count for the header bell. Fetched independently so the bell
