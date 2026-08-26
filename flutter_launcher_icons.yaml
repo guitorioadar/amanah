@@ -1,9 +1,13 @@
 flutter_launcher_icons:
-  image_path: "assets/images/logo.png"
+  # Padded variants (glyph centered with margin) so neither the iOS corner
+  # rounding nor the Android adaptive mask clips the mark. See logo.png for the
+  # full-bleed source.
+  image_path: "assets/images/logo_icon.png"
   android: true
   ios: true
   remove_alpha_ios: true
   min_sdk_android: 24
-  # Android 8+ adaptive icon: brand-blue plate behind the mark.
+  # Android 8+ adaptive icon: white plate behind the mark; foreground is
+  # padded to sit inside the safe zone.
   adaptive_icon_background: "#FFFFFF"
-  adaptive_icon_foreground: "assets/images/logo.png"
+  adaptive_icon_foreground: "assets/images/logo_adaptive.png"
