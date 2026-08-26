@@ -196,8 +196,8 @@ class _NoteField extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.s3,
-        vertical: AppSpacing.s3,
+        horizontal: AppSpacing.s1,
+        vertical: AppSpacing.s1,
       ),
       decoration: BoxDecoration(
         color: AppColors.bgDefault,
