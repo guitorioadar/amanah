@@ -1,0 +1,21 @@
+# Native OS launch splash: white background + centered brand mark on both
+# Android (legacy + Android 12 splash API) and iOS. White is forced in dark
+# mode too, so the launch screen never flashes black.
+#
+# Regenerate after editing:  dart run flutter_native_splash:create
+flutter_native_splash:
+  color: "#ffffff"
+  color_dark: "#ffffff"
+  image: assets/images/splash_logo.png
+  image_dark: assets/images/splash_logo.png
+
+  android: true
+  ios: true
+  web: false
+
+  # Android 12+ uses the system splash API (masked icon on a solid window).
+  android_12:
+    color: "#ffffff"
+    color_dark: "#ffffff"
+    image: assets/images/splash_logo_android12.png
+    image_dark: assets/images/splash_logo_android12.png
