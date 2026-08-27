@@ -52,6 +52,18 @@ class ProfileRepositoryImpl implements ProfileRepository {
   }
 
   @override
+  Future<void> registerFcmToken(String token) async {
+    try {
+      await _dio.post<Map<String, dynamic>>(
+        '/auth/fcm-token',
+        data: {'fcm_token': token, 'platform': 'app'},
+      );
+    } on DioException catch (e) {
+      throw ApiException.fromDio(e);
+    }
+  }
+
+  @override
   Future<void> sendDeleteAccountOtp() async {
     try {
       await _dio.post<Map<String, dynamic>>('/auth/delete-account/send-otp');

@@ -12,6 +12,7 @@ class SecureStorage {
   static const _kRefreshToken = 'refresh_token';
   static const _kTokenType = 'token_type';
   static const _kUser = 'user_json';
+  static const _kFcmToken = 'fcm_token';
 
   Future<String?> get accessToken => _storage.read(key: _kAccessToken);
   Future<String?> get refreshToken => _storage.read(key: _kRefreshToken);
@@ -46,10 +47,19 @@ class SecureStorage {
   Future<String?> get userJson => _storage.read(key: _kUser);
   Future<void> saveUser(String json) => _storage.write(key: _kUser, value: json);
 
+  /// The FCM token last successfully registered with the backend. Used to skip
+  /// re-registering an unchanged token on cold start.
+  Future<String?> get registeredFcmToken => _storage.read(key: _kFcmToken);
+  Future<void> saveRegisteredFcmToken(String token) =>
+      _storage.write(key: _kFcmToken, value: token);
+
   Future<void> clear() async {
     await _storage.delete(key: _kAccessToken);
     await _storage.delete(key: _kRefreshToken);
     await _storage.delete(key: _kTokenType);
     await _storage.delete(key: _kUser);
+    // Cleared on logout so the next user re-registers even if the device token
+    // is unchanged (the backend binds the token to the signed-in user).
+    await _storage.delete(key: _kFcmToken);
   }
 }

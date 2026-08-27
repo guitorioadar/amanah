@@ -37,6 +37,10 @@ abstract interface class ProfileRepository {
   /// Uploads a new avatar (multipart) and returns its public URL.
   Future<String> updateProfilePicture(String filePath);
 
+  /// Registers/updates this device's FCM token for push
+  /// (`POST /auth/fcm-token`, `platform: "app"`).
+  Future<void> registerFcmToken(String token);
+
   /// Emails a one-time code to the signed-in user before deletion
   /// (`POST /auth/delete-account/send-otp`).
   Future<void> sendDeleteAccountOtp();

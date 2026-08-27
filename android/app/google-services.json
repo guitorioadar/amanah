@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "581835950104",
+    "project_id": "amanah-cea18",
+    "storage_bucket": "amanah-cea18.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:581835950104:android:8d6b81f1f3ac4bbaebdb6d",
+        "android_client_info": {
+          "package_name": "com.isnahalal.amanah"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDpCXjtz6WuFIsTVEO5FteBsc9zt2oJ3BA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

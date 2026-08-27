@@ -42,6 +42,11 @@ class MockProfileRepository implements ProfileRepository {
   }
 
   @override
+  Future<void> registerFcmToken(String token) async {
+    await Future<void>.delayed(const Duration(milliseconds: 200));
+  }
+
+  @override
   Future<void> sendDeleteAccountOtp() async {
     await Future<void>.delayed(const Duration(milliseconds: 600));
   }
