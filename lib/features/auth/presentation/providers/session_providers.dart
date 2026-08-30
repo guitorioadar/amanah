@@ -49,19 +49,19 @@ class CurrentUserNotifier extends Notifier<User?> {
     _tokenRefreshSub = null;
     await ref.read(secureStorageProvider).clear();
     ref.read(notificationSettingsProvider.notifier).clear();
-    unawaited(PushService.instance.clearBadge());
+    unawaited(PushService.instance.clearNotifications());
     state = null;
   }
 
-  /// Registers the current FCM token, keeps it fresh on rotation, and syncs the
-  /// app-icon badge. All best-effort — failures never block the session.
+  /// Registers the current FCM token and keeps it fresh on rotation. All
+  /// best-effort — failures never block the session. (The app-icon badge is the
+  /// launcher's native notification count, so nothing to sync here.)
   Future<void> _syncPush() async {
     final token = await PushService.instance.token();
     if (token != null) await _registerIfChanged(token);
     _tokenRefreshSub ??= PushService.instance.onTokenRefresh.listen((t) {
       unawaited(_registerIfChanged(t));
     });
-    unawaited(PushService.instance.syncBadge());
   }
 
   /// Calls the register API only when [token] differs from the one we last
