@@ -1,21 +1,15 @@
 import 'dart:async';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 /// Push notifications: permission, foreground tray display (via
 /// [FlutterLocalNotificationsPlugin]), and FCM token access.
 ///
-/// The app-icon badge is **not** set explicitly — we rely on the OS launcher's
-/// native notification-count badge (WhatsApp-style). Samsung/Xiaomi etc. count
-/// the app's active tray notifications and stamp that number on the icon
-/// automatically; dismissing/opening a notification decrements it. Background &
-/// killed `notification`-type pushes are posted by the OS, so they get counted
-/// without any Dart code; foreground pushes are posted here with unique ids so
-/// the launcher counts them too.
-///
-/// Token registration to the backend is driven by the session layer, which owns
-/// the authenticated repository.
+/// Background & killed `notification`-type pushes are posted by the OS;
+/// foreground pushes are posted here. Token registration to the backend is
+/// driven by the session layer, which owns the authenticated repository.
 class PushService {
   PushService._();
   static final PushService instance = PushService._();
@@ -25,9 +19,10 @@ class PushService {
 
   bool _ready = false;
 
-  /// Must match the FCM default channel declared in AndroidManifest. `showBadge`
-  /// defaults to true, which lets the launcher count notifications on this
-  /// channel (the native, WhatsApp-style app-icon badge).
+  /// Must match the FCM default channel declared in AndroidManifest.
+  /// `showBadge: false` suppresses the app-icon badge for every notification on
+  /// this channel (Android 8+) — this overrides any `notification_count` the
+  /// server sends. App-icon badge is deferred; revisit when it's built.
   static const AndroidNotificationChannel _channel = AndroidNotificationChannel(
     'high_importance_channel',
     'Notifications',
@@ -44,7 +39,6 @@ class PushService {
     await messaging.requestPermission();
     await messaging.setForegroundNotificationPresentationOptions(
       alert: true,
-      badge: true,
       sound: true,
     );
 
@@ -59,10 +53,31 @@ class PushService {
             AndroidFlutterLocalNotificationsPlugin>()
         ?.createNotificationChannel(_channel);
 
-    // Foreground messages aren't auto-posted by the OS, so display them here
-    // (unique id per message) — this is also what makes the launcher badge tick
-    // up while the app is open. Background/killed messages are posted by the OS.
-    FirebaseMessaging.onMessage.listen(_onForegroundMessage);
+    // Foreground messages aren't auto-posted by the OS, so display them here.
+    // Background/killed messages are posted by the OS.
+    FirebaseMessaging.onMessage.listen((m) {
+      _logPayload('foreground', m);
+      _onForegroundMessage(m);
+    });
+    // Tap on a notification while backgrounded (not killed).
+    FirebaseMessaging.onMessageOpenedApp
+        .listen((m) => _logPayload('opened', m));
+    // Tap that cold-started the app from killed state.
+    final initial = await FirebaseMessaging.instance.getInitialMessage();
+    if (initial != null) _logPayload('initial', initial);
+
+    debugPrint('PUSH init: listeners attached, token=${await token()}');
+  }
+
+  /// Dumps the raw push payload to the debug console so we can inspect what the
+  /// backend actually sends. Debug builds only.
+  void _logPayload(String source, RemoteMessage m) {
+    if (!kDebugMode) return;
+    final n = m.notification;
+    debugPrint('PUSH[$source] id=${m.messageId}');
+    debugPrint('  notification={title:${n?.title}, body:${n?.body}}');
+    debugPrint('  android.count=${n?.android?.count}');
+    debugPrint('  data=${m.data}');
   }
 
   /// This device's current FCM token (null if unavailable / not permitted).
@@ -75,10 +90,10 @@ class PushService {
   void _onForegroundMessage(RemoteMessage message) {
     final n = message.notification;
     if (n == null) return;
-    // Unique id per message so notifications STACK in the tray (identical
-    // title/body would otherwise collide and replace each other, keeping the
-    // launcher badge stuck at 1). messageId is unique per push; fall back to a
-    // timestamp. Masked to a positive 31-bit int (Android notification id).
+    // Unique id per message so notifications stack in the tray instead of
+    // replacing each other (identical title/body would otherwise collide).
+    // messageId is unique per push; fall back to a timestamp. Masked to a
+    // positive 31-bit int (Android notification id).
     final id =
         (message.messageId?.hashCode ?? DateTime.now().microsecondsSinceEpoch) &
             0x7fffffff;
@@ -100,7 +115,6 @@ class PushService {
     ));
   }
 
-  /// Clears every posted notification, which also resets the native launcher
-  /// badge to zero. Called on logout.
+  /// Clears every posted notification. Called on logout.
   Future<void> clearNotifications() => _local.cancelAll();
 }

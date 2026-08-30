@@ -12,8 +12,7 @@ Future<void> main() async {
   // Push is best-effort: if Firebase isn't configured on this platform yet
   // (e.g. the iOS GoogleService-Info.plist hasn't been added to the target),
   // the app still launches without notifications. No background message handler
-  // is needed — the OS posts notification-type pushes itself, and the launcher's
-  // native badge counts them (WhatsApp-style).
+  // is needed — the OS posts notification-type pushes itself.
   try {
     await Firebase.initializeApp();
     await PushService.instance.init();

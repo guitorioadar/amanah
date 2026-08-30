@@ -21,11 +21,14 @@ class SignInScreen extends ConsumerStatefulWidget {
 class _SignInScreenState extends ConsumerState<SignInScreen> {
   final _formKey = GlobalKey<FormState>();
   
-  final _email = TextEditingController( text: kDebugMode ? 'mahmudshakkhor@gmail.com' : '', ); // wasisadman.cse@gmail.com | mahmudshakkhor@gmail.com
-  final _password = TextEditingController( text: kDebugMode ? 'P123456a@' : '', ); //  1234567890 | P123456a@
+  // final _email = TextEditingController( text: kDebugMode ? 'junal53@gmail.com' : '', );
+  // final _password = TextEditingController( text: kDebugMode ? 'Ydkm117@' : '', );
   
-  // final _email = TextEditingController( text: kDebugMode ? 'wasisadman.cse@gmail.com' : '', ); // wasisadman.cse@gmail.com | mahmudshakkhor@gmail.com
-  // final _password = TextEditingController( text: kDebugMode ? '1234567890' : '', ); //  1234567890 | P123456a@
+  final _email = TextEditingController( text: kDebugMode ? 'mahmudshakkhor@gmail.com' : '', );
+  final _password = TextEditingController( text: kDebugMode ? 'P123456a@' : '', );
+  
+  // final _email = TextEditingController( text: kDebugMode ? 'wasisadman.cse@gmail.com' : '', );
+  // final _password = TextEditingController( text: kDebugMode ? '1234567890' : '', );
   
   var _autovalidate = false;
 

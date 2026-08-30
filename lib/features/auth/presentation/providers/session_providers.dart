@@ -54,8 +54,7 @@ class CurrentUserNotifier extends Notifier<User?> {
   }
 
   /// Registers the current FCM token and keeps it fresh on rotation. All
-  /// best-effort — failures never block the session. (The app-icon badge is the
-  /// launcher's native notification count, so nothing to sync here.)
+  /// best-effort — failures never block the session.
   Future<void> _syncPush() async {
     final token = await PushService.instance.token();
     if (token != null) await _registerIfChanged(token);
