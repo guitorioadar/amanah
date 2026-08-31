@@ -53,43 +53,35 @@ class PushService {
             AndroidFlutterLocalNotificationsPlugin>()
         ?.createNotificationChannel(_channel);
 
-    // Foreground messages aren't auto-posted by the OS, so display them here.
-    // Background/killed messages are posted by the OS.
-    FirebaseMessaging.onMessage.listen((m) {
-      _logPayload('foreground', m);
-      _onForegroundMessage(m);
-    });
-    // Tap on a notification while backgrounded (not killed).
-    FirebaseMessaging.onMessageOpenedApp
-        .listen((m) => _logPayload('opened', m));
-    // Tap that cold-started the app from killed state.
-    final initial = await FirebaseMessaging.instance.getInitialMessage();
-    if (initial != null) _logPayload('initial', initial);
-
-    debugPrint('PUSH init: listeners attached, token=${await token()}');
-  }
-
-  /// Dumps the raw push payload to the debug console so we can inspect what the
-  /// backend actually sends. Debug builds only.
-  void _logPayload(String source, RemoteMessage m) {
-    if (!kDebugMode) return;
-    final n = m.notification;
-    debugPrint('PUSH[$source] id=${m.messageId}');
-    debugPrint('  notification={title:${n?.title}, body:${n?.body}}');
-    debugPrint('  android.count=${n?.android?.count}');
-    debugPrint('  data=${m.data}');
+    // Foreground messages aren't auto-posted by the OS on Android, so display
+    // them here. Background/killed messages are posted by the OS.
+    FirebaseMessaging.onMessage.listen(_onForegroundMessage);
   }
 
   /// This device's current FCM token (null if unavailable / not permitted).
-  Future<String?> token() => FirebaseMessaging.instance.getToken();
+  /// Returns null when push isn't initialized (e.g. Firebase not configured on
+  /// this platform yet) so the session layer never touches an uninitialized
+  /// Firebase app.
+  Future<String?> token() async {
+    if (!_ready) return null;
+    final messaging = FirebaseMessaging.instance;
+    final fcm = await messaging.getToken();
+    debugPrint('FCM token=$fcm');
+    return fcm;
+  }
 
-  /// Fires when FCM rotates the token — re-register with the backend.
+  /// Fires when FCM rotates the token — re-register with the backend. Empty
+  /// stream when push isn't initialized.
   Stream<String> get onTokenRefresh =>
-      FirebaseMessaging.instance.onTokenRefresh;
+      _ready ? FirebaseMessaging.instance.onTokenRefresh : const Stream.empty();
 
   void _onForegroundMessage(RemoteMessage message) {
     final n = message.notification;
     if (n == null) return;
+    // iOS presents foreground notifications itself (via
+    // setForegroundNotificationPresentationOptions). Showing one here too would
+    // duplicate it — so only display manually on Android, which does not.
+    if (defaultTargetPlatform != TargetPlatform.android) return;
     // Unique id per message so notifications stack in the tray instead of
     // replacing each other (identical title/body would otherwise collide).
     // messageId is unique per push; fall back to a timestamp. Masked to a

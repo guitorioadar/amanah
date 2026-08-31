@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:amanah/app.dart';
 import 'package:amanah/core/config/env.dart';
 import 'package:amanah/core/push/push_service.dart';
@@ -9,13 +11,14 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Env.load();
 
-  // Push is best-effort: if Firebase isn't configured on this platform yet
-  // (e.g. the iOS GoogleService-Info.plist hasn't been added to the target),
-  // the app still launches without notifications. No background message handler
-  // is needed — the OS posts notification-type pushes itself.
+  // Push is best-effort and must never block startup. On iOS, FCM setup awaits
+  // an APNs token, which can stall until APNs registration completes (or never,
+  // if APNs isn't configured yet) — so init runs fire-and-forget, off the path
+  // to runApp. No background message handler is needed; the OS posts
+  // notification-type pushes itself.
   try {
     await Firebase.initializeApp();
-    await PushService.instance.init();
+    unawaited(PushService.instance.init());
   } on Object {
     // Notifications unavailable; continue.
   }
