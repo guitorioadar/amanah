@@ -68,6 +68,33 @@ flutter pub outdated               # check dependency updates
 flutter doctor -v                  # verify toolchain
 ```
 
+### ShoreBird
+
+#### Builds
+```bash
+shorebird release --platforms=android,ios // This will build both Android(aab) and iOS(ipa)
+shorebird release --platforms=android,ios -- --dart-define=FLAVOR=prod // Both platforms with prod flavor (env/.env.prod) for store upload
+shorebird release android --artifact=apk // For Android APK
+```
+ 
+✅ Published Release 1.0.0+1!
+Your next step is to upload the app bundle to the Play Store and App Store:
+Android: /build/app/outputs/bundle/release/app-release.aab
+iOS: build/ios/ipa
+
+#### Patches
+To create a patch for this release, run 
+```bash
+ shorebird patch --platforms=android --release-version=1.0.0+1 // For Android patch
+ shorebird patch --platforms=ios --release-version=1.0.0+1 // For iOS patch
+```
+
+#### Preview / See Changes
+```bash
+shorebird preview --platforms=android,ios // This will preview both Android(aab) and iOS(ipa)
+```
+
+
 
 ### Mock Data
 ```bash
