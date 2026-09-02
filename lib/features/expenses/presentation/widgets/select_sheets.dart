@@ -244,8 +244,8 @@ class _SelectClientsSheetState extends ConsumerState<_SelectClientsSheet> {
         final selected = _selected.containsKey(c.id);
         return _OptionRow(
           leading: _CheckSquare(selected: selected),
-          title: c.name,
-          subtitle: c.businessName,
+          title: c.businessName,
+          subtitle: c.name,
           onTap: () => _toggle(c),
         );
       },

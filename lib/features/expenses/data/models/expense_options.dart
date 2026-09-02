@@ -17,8 +17,8 @@ class ClientOption {
   const ClientOption({
     required this.id,
     required this.name,
+    required this.businessName,
     this.email,
-    this.businessName,
     this.profilePictureUrl,
     this.businessLogoUrl,
   });
@@ -27,7 +27,7 @@ class ClientOption {
         id: json['id'] as int,
         name: json['name'] as String? ?? '',
         email: json['email'] as String?,
-        businessName: json['business_name'] as String?,
+        businessName: json['business_name'] as String? ?? '',
         profilePictureUrl: json['profile_picture_url'] as String?,
         businessLogoUrl: json['business_logo_url'] as String?,
       );
@@ -35,7 +35,7 @@ class ClientOption {
   final int id;
   final String name;
   final String? email;
-  final String? businessName;
+  final String businessName;
   final String? profilePictureUrl;
   final String? businessLogoUrl;
 }
