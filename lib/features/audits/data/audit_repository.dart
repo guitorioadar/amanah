@@ -54,10 +54,16 @@ class AuditRepositoryImpl implements AuditRepository {
         },
       );
       final data = (res.data!['data'] as List).cast<Map<String, dynamic>>();
-      // Section isn't in the payload — inject the requested one for the chip.
-      return data
-          .map((j) => Audit.fromJson(j).copyWith(section: section))
-          .toList();
+      // Section isn't a top-level field — inject one for the chip. The
+      // `assigned` list mixes states, so derive each card's section from its
+      // own `status`; single-section lists just take the requested section.
+      final assigned = section == AuditSection.assigned;
+      return data.map((j) {
+        final audit = Audit.fromJson(j);
+        return audit.copyWith(
+          section: assigned ? AuditSection.fromStatus(audit.status) : section,
+        );
+      }).toList();
     } on DioException catch (e) {
       throw ApiException.fromDio(e);
     }
@@ -132,7 +138,11 @@ class MockAuditRepository implements AuditRepository {
     String? keyword,
   }) async {
     await _latency();
-    final all = _seed.where((a) => a.section == section);
+    // `assigned` returns every seeded audit (each keeps its own section);
+    // other sections filter to their own.
+    final all = section == AuditSection.assigned
+        ? _seed
+        : _seed.where((a) => a.section == section);
     if (keyword == null || keyword.trim().isEmpty) return all.toList();
     final q = keyword.trim().toLowerCase();
     return all

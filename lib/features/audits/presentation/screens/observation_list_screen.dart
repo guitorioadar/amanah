@@ -13,6 +13,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
+import 'package:toastification/toastification.dart';
 
 /// Observation list for one category — light header (back + category name) over
 /// the category's observation cards. Each card shows the finding selector
@@ -82,7 +83,13 @@ class ObservationListScreen extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 _TopBar(title: category.title),
-                Expanded(child: _Body(category, eventId: auditId)),
+                Expanded(
+                  child: _Body(
+                    category,
+                    eventId: auditId,
+                    auditCompleted: detail.isCompleted,
+                  ),
+                ),
               ],
             );
           },
@@ -154,9 +161,14 @@ class _TopBar extends StatelessWidget {
 
 /// Category summary (title + progress) followed by the observation cards.
 class _Body extends StatelessWidget {
-  const _Body(this.category, {required this.eventId});
+  const _Body(
+    this.category, {
+    required this.eventId,
+    required this.auditCompleted,
+  });
   final AuditCategory category;
   final int eventId;
+  final bool auditCompleted;
 
   @override
   Widget build(BuildContext context) {
@@ -208,6 +220,7 @@ class _Body extends StatelessWidget {
                       observations[i],
                       eventId: eventId,
                       categoryTitle: category.title,
+                      auditCompleted: auditCompleted,
                     ),
                   ),
           ),
@@ -249,10 +262,12 @@ class _ObservationCard extends StatelessWidget {
     this.observation, {
     required this.eventId,
     required this.categoryTitle,
+    required this.auditCompleted,
   });
   final AuditObservation observation;
   final int eventId;
   final String categoryTitle;
+  final bool auditCompleted;
 
   bool get _hasRecords =>
       observation.documentsCount > 0 ||
@@ -262,6 +277,21 @@ class _ObservationCard extends StatelessWidget {
       observation.hasNote;
 
   void _openSheet(BuildContext context, {Finding? finding}) {
+    // Completed audit with nothing submitted for this observation — there's
+    // nothing to preview, so tell the user instead of opening an empty sheet.
+    if (auditCompleted && !observation.isSubmitted) {
+      toastification.show(
+        context: context,
+        type: ToastificationType.info,
+        style: ToastificationStyle.flat,
+        title: const Text(
+          "This observation can't be edited — the audit is completed.",
+        ),
+        alignment: Alignment.bottomCenter,
+        autoCloseDuration: const Duration(seconds: 3),
+      );
+      return;
+    }
     unawaited(
       showEnterSubmissionSheet(
         context,
@@ -269,6 +299,7 @@ class _ObservationCard extends StatelessWidget {
         categoryTitle: categoryTitle,
         observation: observation,
         initialFinding: finding,
+        auditCompleted: auditCompleted,
       ),
     );
   }

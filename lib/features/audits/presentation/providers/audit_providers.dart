@@ -45,9 +45,8 @@ final upcomingAuditsProvider = FutureProvider.autoDispose<List<Audit>>((ref) {
 
 // ── Audits tab ───────────────────────────────────────────────────────────
 
-/// The three segments of the Audits screen. `assigned` is the union of every
-/// section (running + upcoming + completed); the other two map 1:1 to a
-/// `/my-audits` section.
+/// The three segments of the Audits screen. Each maps 1:1 to a `/my-audits`
+/// section — `assigned` is a server section that already returns the union.
 enum AuditTab {
   assigned,
   inProgress,
@@ -75,27 +74,21 @@ class AuditsSearch extends Notifier<String> {
   }
 }
 
-/// Audits for one [AuditTab], filtered by [auditsSearchProvider]. `assigned`
-/// fans out to all three sections in parallel and concatenates them so each
-/// card keeps its own status chip (In progress / Upcoming / Completed).
+/// Audits for one [AuditTab], filtered by [auditsSearchProvider]. Each tab is a
+/// single `/my-audits` call; the `assigned` section already returns the union,
+/// with each card carrying its own status chip (In progress / Upcoming /
+/// Completed).
 // ignore: specify_nonobvious_property_types
 final auditsTabProvider =
     FutureProvider.autoDispose.family<List<Audit>, AuditTab>((ref, tab) {
   final keyword = ref.watch(auditsSearchProvider);
   final repo = ref.watch(auditRepositoryProvider);
-
-  switch (tab) {
-    case AuditTab.inProgress:
-      return repo.myAudits(section: AuditSection.running, keyword: keyword);
-    case AuditTab.completed:
-      return repo.myAudits(section: AuditSection.completed, keyword: keyword);
-    case AuditTab.assigned:
-      return Future.wait([
-        repo.myAudits(section: AuditSection.running, keyword: keyword),
-        repo.myAudits(section: AuditSection.upcoming, keyword: keyword),
-        repo.myAudits(section: AuditSection.completed, keyword: keyword),
-      ]).then((lists) => [for (final list in lists) ...list]);
-  }
+  final section = switch (tab) {
+    AuditTab.assigned => AuditSection.assigned,
+    AuditTab.inProgress => AuditSection.running,
+    AuditTab.completed => AuditSection.completed,
+  };
+  return repo.myAudits(section: section, keyword: keyword);
 });
 
 // ── Audit details ──────────────────────────────────────────────────────────

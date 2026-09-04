@@ -39,6 +39,7 @@ Future<bool?> showEnterSubmissionSheet(
   required String categoryTitle,
   required AuditObservation observation,
   Finding? initialFinding,
+  bool auditCompleted = false,
 }) {
   return showModalBottomSheet<bool>(
     context: context,
@@ -53,6 +54,7 @@ Future<bool?> showEnterSubmissionSheet(
       categoryTitle: categoryTitle,
       observation: observation,
       initialFinding: initialFinding,
+      auditCompleted: auditCompleted,
     ),
   );
 }
@@ -63,6 +65,7 @@ class _EnterSubmissionSheet extends ConsumerStatefulWidget {
     required this.categoryTitle,
     required this.observation,
     required this.initialFinding,
+    required this.auditCompleted,
   });
 
   final int eventId;
@@ -70,14 +73,21 @@ class _EnterSubmissionSheet extends ConsumerStatefulWidget {
   final AuditObservation observation;
   final Finding? initialFinding;
 
+  /// When the audit is completed, the sheet is preview-only: no "Submit again".
+  final bool auditCompleted;
+
   @override
   ConsumerState<_EnterSubmissionSheet> createState() =>
       _EnterSubmissionSheetState();
 }
 
 class _EnterSubmissionSheetState extends ConsumerState<_EnterSubmissionSheet> {
-  late Finding? _finding =
-      widget.initialFinding ?? widget.observation.findingValue;
+  // An already-submitted observation always previews its saved finding —
+  // tapping a different pill on the list doesn't overwrite it here. Only a
+  // fresh (unsubmitted) observation honours the tapped [initialFinding].
+  late Finding? _finding = widget.observation.isSubmitted
+      ? widget.observation.findingValue
+      : (widget.initialFinding ?? widget.observation.findingValue);
   late final _noteController = TextEditingController(
     text: widget.observation.note ?? '',
   );
@@ -87,8 +97,11 @@ class _EnterSubmissionSheetState extends ConsumerState<_EnterSubmissionSheet> {
   final List<_Picked> _newFiles = [];
   bool _saving = false;
 
-  // Already-submitted observations open read-only; "Submit again" → edit.
-  late _Mode _mode = widget.observation.isSubmitted ? _Mode.view : _Mode.edit;
+  // Completed audits are always preview-only. Otherwise already-submitted
+  // observations open read-only ("Submit again" → edit); new ones open editable.
+  late _Mode _mode = widget.auditCompleted || widget.observation.isSubmitted
+      ? _Mode.view
+      : _Mode.edit;
 
   static final _dateFmt = DateFormat('MMM d, yyyy h:mm a');
 
@@ -274,27 +287,29 @@ class _EnterSubmissionSheetState extends ConsumerState<_EnterSubmissionSheet> {
                 ),
               ),
             ),
-            Padding(
-              padding: EdgeInsets.fromLTRB(
-                AppSpacing.s4,
-                AppSpacing.s2,
-                AppSpacing.s4,
-                bottomInset + (Platform.isAndroid ? AppSpacing.s4 : 0),
+            // Completed audits are preview-only — no action button at all.
+            if (!widget.auditCompleted)
+              Padding(
+                padding: EdgeInsets.fromLTRB(
+                  AppSpacing.s4,
+                  AppSpacing.s2,
+                  AppSpacing.s4,
+                  bottomInset + (Platform.isAndroid ? AppSpacing.s4 : 0),
+                ),
+                child: isView
+                    // View mode: "Submit again" activates the editable form.
+                    ? AppButton(
+                        label: 'Submit Again',
+                        outlined: true,
+                        onPressed: () => setState(() => _mode = _Mode.edit),
+                      )
+                    // Edit mode: blue only when something changed.
+                    : AppButton(
+                        label: 'Save',
+                        loading: _saving,
+                        onPressed: _dirty ? _save : null,
+                      ),
               ),
-              child: isView
-                  // View mode: "Submit again" activates the editable form.
-                  ? AppButton(
-                      label: 'Submit Again',
-                      outlined: true,
-                      onPressed: () => setState(() => _mode = _Mode.edit),
-                    )
-                  // Edit mode: blue only when something changed.
-                  : AppButton(
-                      label: 'Save',
-                      loading: _saving,
-                      onPressed: _dirty ? _save : null,
-                    ),
-            ),
           ],
         ),
       ),

@@ -13,13 +13,15 @@ class AuditStatusChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // `assigned` never labels a card (items carry their real section); it maps
+    // to the in-progress style only to keep the switch exhaustive.
     final color = switch (section) {
-      AuditSection.running => AppColors.brand,
+      AuditSection.running || AuditSection.assigned => AppColors.brand,
       AuditSection.upcoming => AppColors.textWarning,
       AuditSection.completed => AppColors.textSuccess,
     };
     final bg = switch (section) {
-      AuditSection.running => AppColors.bgChipInProgress,
+      AuditSection.running || AuditSection.assigned => AppColors.bgChipInProgress,
       AuditSection.upcoming => AppColors.bgChipUpcoming,
       AuditSection.completed => AppColors.bgChipCompleted,
     };

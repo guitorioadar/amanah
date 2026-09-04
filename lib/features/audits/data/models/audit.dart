@@ -9,7 +9,11 @@ part 'audit.g.dart';
 enum AuditSection {
   running,
   upcoming,
-  completed;
+  completed,
+
+  /// Server section that returns running + upcoming + completed in one call.
+  /// Cards derive their own chip from each item's `status` (see the repository).
+  assigned;
 
   /// Query value for `?section=`.
   String get query => name;
@@ -22,11 +26,13 @@ enum AuditSection {
         _ => running,
       };
 
-  /// Chip label shown on the card.
+  /// Chip label shown on the card. [assigned] never labels a card — items in
+  /// the assigned list carry their real per-item section.
   String get chipLabel => switch (this) {
         AuditSection.running => 'In progress',
         AuditSection.upcoming => 'Upcoming',
         AuditSection.completed => 'Completed',
+        AuditSection.assigned => 'Assigned',
       };
 }
 
