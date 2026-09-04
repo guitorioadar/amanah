@@ -2,20 +2,26 @@ PODS:
   - Flutter (1.0.0)
   - flutter_local_notifications (0.0.1):
     - Flutter
+  - video_compress (0.3.0):
+    - Flutter
 
 DEPENDENCIES:
   - Flutter (from `Flutter`)
   - flutter_local_notifications (from `.symlinks/plugins/flutter_local_notifications/ios`)
+  - video_compress (from `.symlinks/plugins/video_compress/ios`)
 
 EXTERNAL SOURCES:
   Flutter:
     :path: Flutter
   flutter_local_notifications:
     :path: ".symlinks/plugins/flutter_local_notifications/ios"
+  video_compress:
+    :path: ".symlinks/plugins/video_compress/ios"
 
 SPEC CHECKSUMS:
   Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
   flutter_local_notifications: df98d66e515e1ca797af436137b4459b160ad8c9
+  video_compress: fce97e4fb1dfd88175aa07d2ffc8a2f297f87fbe
 
 PODFILE CHECKSUM: 4b015915ec662986b54bf30ab778da63f7dda016
 

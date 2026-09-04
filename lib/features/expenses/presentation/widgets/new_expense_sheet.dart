@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:amanah/core/media/media_prep.dart';
 import 'package:amanah/core/network/api_exception.dart';
 import 'package:amanah/core/theme/app_colors.dart';
 import 'package:amanah/core/theme/app_spacing.dart';
@@ -85,22 +86,40 @@ class _NewExpenseSheetState extends ConsumerState<_NewExpenseSheet> {
             'pptx',
           ],
         ),
+        MediaPrepKind.document,
       );
 
   /// "Add photo" — images only.
   Future<void> _pickPhotos() => _pick(
         FilePicker.pickFiles(type: FileType.image),
+        MediaPrepKind.image,
       );
 
-  Future<void> _pick(Future<List<PlatformFile>> picker) async {
+  Future<void> _pick(
+    Future<List<PlatformFile>> picker,
+    MediaPrepKind kind,
+  ) async {
     final result = await picker;
     final picked = result.where((f) => f.path != null).toList();
     if (picked.isEmpty) return;
-    setState(() {
-      for (final f in picked) {
-        _receipts.add((path: f.path!, name: f.name));
-      }
-    });
+    // Convert heic/mov receipts to jpg/mp4 and enforce the 100 MB cap.
+    for (final f in picked) {
+      if (!mounted) return;
+      final processed = await prepareMedia(context, path: f.path!, kind: kind);
+      if (processed == null) continue;
+      if (!mounted) return;
+      setState(() {
+        _receipts.add((path: processed, name: _displayName(f.name, processed)));
+      });
+    }
+  }
+
+  /// Keeps the base name, swaps the extension to match the converted file.
+  static String _displayName(String original, String path) {
+    final ext = path.contains('.') ? path.split('.').last : '';
+    final dot = original.lastIndexOf('.');
+    final base = dot == -1 ? original : original.substring(0, dot);
+    return ext.isEmpty ? base : '$base.$ext';
   }
 
   void _removeReceipt(({String path, String name}) r) =>

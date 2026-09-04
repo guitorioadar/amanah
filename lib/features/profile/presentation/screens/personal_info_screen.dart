@@ -1,3 +1,4 @@
+import 'package:amanah/core/media/media_prep.dart';
 import 'package:amanah/core/network/api_exception.dart';
 import 'package:amanah/core/theme/app_colors.dart';
 import 'package:amanah/core/theme/app_spacing.dart';
@@ -104,8 +105,18 @@ class _PersonalInfoScreenState extends ConsumerState<PersonalInfoScreen> {
     final path = picked.isEmpty ? null : picked.first.path;
     if (path == null) return;
 
+    // Convert heic (and enforce 100 MB) before cropping — the cropper and the
+    // backend both want jpg/png.
+    if (!mounted) return;
+    final prepared = await prepareMedia(
+      context,
+      path: path,
+      kind: MediaPrepKind.image,
+    );
+    if (prepared == null) return;
+
     final cropped = await ImageCropper().cropImage(
-      sourcePath: path,
+      sourcePath: prepared,
       uiSettings: [
         AndroidUiSettings(
           toolbarTitle: 'Crop photo',

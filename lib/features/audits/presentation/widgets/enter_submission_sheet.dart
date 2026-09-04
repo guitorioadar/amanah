@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:amanah/core/media/media_prep.dart';
 import 'package:amanah/core/network/api_exception.dart';
 import 'package:amanah/core/theme/app_colors.dart';
 import 'package:amanah/core/theme/app_spacing.dart';
@@ -156,11 +157,42 @@ class _EnterSubmissionSheetState extends ConsumerState<_EnterSubmissionSheet> {
     if (picked.length > room) {
       _toast('You can attach up to $_maxFiles files.', error: true);
     }
-    setState(() {
-      for (final f in picked.take(room)) {
-        _newFiles.add(_Picked(path: f.path!, name: f.name, kind: kind));
-      }
-    });
+    // iPhone hands us .mov / .heic; convert to mp4 / jpg (with a progress
+    // dialog for video) and enforce the 100 MB cap before attaching.
+    for (final f in picked.take(room)) {
+      if (!mounted) return;
+      final processed = await prepareMedia(
+        context,
+        path: f.path!,
+        kind: _prepKind(kind),
+      );
+      if (processed == null) continue; // failed / over limit — toast shown.
+      if (!mounted) return;
+      setState(() {
+        _newFiles.add(
+          _Picked(
+            path: processed,
+            name: _displayName(f.name, processed),
+            kind: kind,
+          ),
+        );
+      });
+    }
+  }
+
+  static MediaPrepKind _prepKind(_Kind kind) => switch (kind) {
+        _Kind.video => MediaPrepKind.video,
+        _Kind.photo => MediaPrepKind.image,
+        _Kind.document => MediaPrepKind.document,
+      };
+
+  /// Keeps the original base name but swaps the extension to match the
+  /// (possibly converted) file, so the upload's filename ends in .mp4/.jpg.
+  static String _displayName(String original, String path) {
+    final ext = path.contains('.') ? path.split('.').last : '';
+    final dot = original.lastIndexOf('.');
+    final base = dot == -1 ? original : original.substring(0, dot);
+    return ext.isEmpty ? base : '$base.$ext';
   }
 
   void _removeExisting(AuditFile file) {
