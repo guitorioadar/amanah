@@ -7,7 +7,7 @@ plugins {
 }
 
 android {
-    namespace = "com.isnahalal.amanah"
+    namespace = "com.amanahmatrix"
     // flutter_secure_storage requires compileSdk 37+.
     compileSdk = 37
     ndkVersion = flutter.ndkVersion
@@ -21,7 +21,7 @@ android {
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.isnahalal.amanah"
+        applicationId = "com.amanahmatrix"
         // Android 6.0+ (per plan). flutter_secure_storage needs minSdk 23+.
         minSdk = 24
         targetSdk = flutter.targetSdkVersion

@@ -1,4 +1,4 @@
-package com.isnahalal.amanah
+package com.amanahmatrix
 
 import io.flutter.embedding.android.FlutterActivity
 

@@ -7,9 +7,9 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:581835950104:android:8d6b81f1f3ac4bbaebdb6d",
+        "mobilesdk_app_id": "1:581835950104:android:25322946996e7293ebdb6d",
         "android_client_info": {
-          "package_name": "com.isnahalal.amanah"
+          "package_name": "com.amanahmatrix"
         }
       },
       "oauth_client": [],

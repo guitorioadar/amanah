@@ -9,7 +9,7 @@
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
-	<string>com.isnahalal.amanah</string>
+	<string>com.amanahmatrix</string>
 	<key>PROJECT_ID</key>
 	<string>amanah-cea18</string>
 	<key>STORAGE_BUCKET</key>
@@ -25,6 +25,6 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:581835950104:ios:ff2fe2571ea4ac13ebdb6d</string>
+	<string>1:581835950104:ios:5ae22310cc697112ebdb6d</string>
 </dict>
 </plist>
