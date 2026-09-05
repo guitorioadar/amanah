@@ -21,8 +21,9 @@ Future<String?> prepareMedia(
   required String path,
   required MediaPrepKind kind,
 }) async {
-  final needsVideo =
-      kind == MediaPrepKind.video && MediaConverter.isVideoConversionNeeded(path);
+  // Video is always compressed (even already-mp4 files — raw camera clips are
+  // too big to upload reliably). Images convert only when not already jpg/png.
+  final needsVideo = kind == MediaPrepKind.video;
   final needsImage =
       kind == MediaPrepKind.image && MediaConverter.isImageConversionNeeded(path);
 

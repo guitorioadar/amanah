@@ -24,9 +24,6 @@ class MediaConverter {
     return dot == -1 ? '' : name.substring(dot + 1).toLowerCase();
   }
 
-  /// True when [path] isn't already an mp4.
-  static bool isVideoConversionNeeded(String path) => _ext(path) != 'mp4';
-
   /// True when [path] isn't already jpg/jpeg/png.
   static bool isImageConversionNeeded(String path) =>
       !_imageOk.contains(_ext(path));
@@ -49,13 +46,14 @@ class MediaConverter {
     return result.path;
   }
 
-  /// Ensures [path] is an mp4, converting (medium quality) if needed.
-  /// [onProgress] reports 0..1 during conversion. Returns the path to use.
+  /// Compresses [path] to a medium-quality mp4. Always re-encodes — even an
+  /// already-mp4 file (e.g. Android camera clips) — because the raw capture is
+  /// far too large to upload reliably. [onProgress] reports 0..1. Returns the
+  /// compressed file's path.
   static Future<String> ensureMp4(
     String path, {
     void Function(double progress)? onProgress,
   }) async {
-    if (!isVideoConversionNeeded(path)) return path;
     final sub = VideoCompress.compressProgress$.subscribe((p) {
       onProgress?.call((p / 100).clamp(0.0, 1.0));
     });
