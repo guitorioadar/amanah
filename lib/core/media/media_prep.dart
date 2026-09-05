@@ -103,32 +103,51 @@ class _ConversionDialog extends StatelessWidget {
   final ValueNotifier<double?> progress;
   final String label;
 
+  Widget _dialogBody({required String label, required double? barValue}) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: AppText.bodyMMedium.copyWith(color: AppColors.textDefault),
+        ),
+        const SizedBox(height: AppSpacing.s3),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(AppRadius.sm),
+          child: LinearProgressIndicator(
+            value: barValue,
+            minHeight: 6,
+            backgroundColor: AppColors.bgHovered,
+            color: AppColors.brand,
+          ),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
       backgroundColor: AppColors.bgDefault,
       content: ValueListenableBuilder<double?>(
         valueListenable: progress,
-        builder: (_, value, _) => Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              value == null ? label : '$label ${(value * 100).round()}%',
-              style: AppText.bodyMMedium.copyWith(color: AppColors.textDefault),
+        builder: (_, value, _) {
+          // Image conversion is indeterminate (null); video reports discrete
+          // % ticks — tween between them so the bar glides instead of jumping.
+          if (value == null) {
+            return _dialogBody(label: label, barValue: null);
+          }
+          return TweenAnimationBuilder<double>(
+            tween: Tween<double>(begin: 0, end: value.clamp(0.0, 1.0)),
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeOut,
+            builder: (_, animated, _) => _dialogBody(
+              label: '$label ${(animated * 100).round()}%',
+              barValue: animated,
             ),
-            const SizedBox(height: AppSpacing.s3),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(AppRadius.sm),
-              child: LinearProgressIndicator(
-                value: value,
-                minHeight: 6,
-                backgroundColor: AppColors.bgHovered,
-                color: AppColors.brand,
-              ),
-            ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }

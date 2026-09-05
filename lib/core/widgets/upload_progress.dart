@@ -18,6 +18,36 @@ class UploadProgress extends StatelessWidget {
     // sitting at a frozen 100%.
     final sending = value < 1.0;
 
+    if (!sending) {
+      // Processing: indeterminate bar, nothing to animate.
+      return _layout(
+        label: 'Processing…',
+        percentText: null,
+        barValue: null,
+      );
+    }
+
+    // Progress arrives in discrete jumps (10% → 20% → 70%). Tween between the
+    // last rendered value and the new one so the bar (and %) glides instead of
+    // snapping. TweenAnimationBuilder keeps its own state, so on each rebuild it
+    // animates from where it currently is to the new [value].
+    return TweenAnimationBuilder<double>(
+      tween: Tween<double>(begin: 0, end: value.clamp(0.0, 1.0)),
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeOut,
+      builder: (context, animated, _) => _layout(
+        label: 'Uploading…',
+        percentText: '${(animated * 100).round()}%',
+        barValue: animated,
+      ),
+    );
+  }
+
+  Widget _layout({
+    required String label,
+    required String? percentText,
+    required double? barValue,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -25,12 +55,12 @@ class UploadProgress extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              sending ? 'Uploading…' : 'Processing…',
+              label,
               style: AppText.bodyMRegular.copyWith(color: AppColors.textSubtle),
             ),
-            if (sending)
+            if (percentText != null)
               Text(
-                '${(value * 100).round()}%',
+                percentText,
                 style:
                     AppText.bodyMMedium.copyWith(color: AppColors.textDefault),
               ),
@@ -40,8 +70,8 @@ class UploadProgress extends StatelessWidget {
         ClipRRect(
           borderRadius: BorderRadius.circular(AppRadius.sm),
           child: LinearProgressIndicator(
-            // Indeterminate (null) while the server processes.
-            value: sending ? value.clamp(0.0, 1.0) : null,
+            // Null = indeterminate (while the server processes).
+            value: barValue,
             minHeight: 6,
             backgroundColor: AppColors.bgHovered,
             color: AppColors.brand,

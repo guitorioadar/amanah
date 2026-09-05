@@ -121,7 +121,7 @@ class _CompleteAuditSheetState extends ConsumerState<_CompleteAuditSheet> {
                 AppSpacing.s4 + MediaQuery.of(context).viewPadding.bottom,
               ),
               child: AppButton(
-                label: 'Complete audit',
+                label: 'Complete Audit',
                 height: 48,
                 loading: _submitting,
                 onPressed: _submitting ? null : _submit,
@@ -158,7 +158,7 @@ class _TopBar extends StatelessWidget {
           Expanded(
             child: Center(
               child: Text(
-                'Complete audit',
+                'Complete Audit',
                 style: AppText.bodyLMedium
                     .copyWith(color: AppColors.textSubtle),
               ),
