@@ -11,6 +11,7 @@ import 'package:amanah/core/widgets/finding_selector.dart';
 import 'package:amanah/core/widgets/media_viewer.dart';
 import 'package:amanah/core/widgets/skeletons/thumb_shimmer.dart';
 import 'package:amanah/core/widgets/thumb_error.dart';
+import 'package:amanah/core/widgets/upload_progress.dart';
 import 'package:amanah/core/widgets/video_thumbnail_image.dart';
 import 'package:amanah/features/audits/data/models/audit_detail.dart';
 import 'package:amanah/features/audits/presentation/providers/audit_providers.dart';
@@ -96,6 +97,10 @@ class _EnterSubmissionSheetState extends ConsumerState<_EnterSubmissionSheet> {
   final List<int> _deleteIds = [];
   final List<_Picked> _newFiles = [];
   bool _saving = false;
+
+  /// Upload progress 0..1 while files are being sent; null when there's no
+  /// upload in flight (or the submission has no files).
+  double? _uploadProgress;
 
   // Completed audits are always preview-only. Otherwise already-submitted
   // observations open read-only ("Submit again" → edit); new ones open editable.
@@ -223,7 +228,12 @@ class _EnterSubmissionSheetState extends ConsumerState<_EnterSubmissionSheet> {
       _toast('Select a finding first.', error: true);
       return;
     }
-    setState(() => _saving = true);
+    final hasUploads = _newFiles.isNotEmpty;
+    setState(() {
+      _saving = true;
+      // Start at 0 only when there are files to upload; null hides the bar.
+      _uploadProgress = hasUploads ? 0 : null;
+    });
     try {
       await ref
           .read(auditRepositoryProvider)
@@ -234,6 +244,12 @@ class _EnterSubmissionSheetState extends ConsumerState<_EnterSubmissionSheet> {
             note: _noteController.text.trim(),
             newFilePaths: [for (final f in _newFiles) f.path],
             deleteFileIds: _deleteIds,
+            onSendProgress: hasUploads
+                ? (sent, total) {
+                    if (total <= 0 || !mounted) return;
+                    setState(() => _uploadProgress = sent / total);
+                  }
+                : null,
           );
       ref.invalidate(auditDetailProvider(widget.eventId));
       if (!mounted) return;
@@ -241,7 +257,10 @@ class _EnterSubmissionSheetState extends ConsumerState<_EnterSubmissionSheet> {
       Navigator.of(context).pop(true);
     } on ApiException catch (e) {
       if (!mounted) return;
-      setState(() => _saving = false);
+      setState(() {
+        _saving = false;
+        _uploadProgress = null;
+      });
       _toast(e.message, error: true);
     }
   }
@@ -303,11 +322,21 @@ class _EnterSubmissionSheetState extends ConsumerState<_EnterSubmissionSheet> {
                         outlined: true,
                         onPressed: () => setState(() => _mode = _Mode.edit),
                       )
-                    // Edit mode: blue only when something changed.
-                    : AppButton(
-                        label: 'Save',
-                        loading: _saving,
-                        onPressed: _dirty ? _save : null,
+                    // Edit mode: blue only when something changed. While files
+                    // upload, show a progress bar above the button.
+                    : Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (_uploadProgress != null) ...[
+                            UploadProgress(_uploadProgress!),
+                            const SizedBox(height: AppSpacing.s3),
+                          ],
+                          AppButton(
+                            label: 'Save',
+                            loading: _saving,
+                            onPressed: _dirty && !_saving ? _save : null,
+                          ),
+                        ],
                       ),
               ),
           ],

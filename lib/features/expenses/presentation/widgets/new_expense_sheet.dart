@@ -7,6 +7,7 @@ import 'package:amanah/core/theme/app_spacing.dart';
 import 'package:amanah/core/theme/app_text_styles.dart';
 import 'package:amanah/core/widgets/app_button.dart';
 import 'package:amanah/core/widgets/media_viewer.dart';
+import 'package:amanah/core/widgets/upload_progress.dart';
 import 'package:amanah/features/expenses/data/models/expense_options.dart';
 import 'package:amanah/features/expenses/presentation/providers/expense_providers.dart';
 import 'package:amanah/features/expenses/presentation/widgets/expense_media.dart';
@@ -52,6 +53,9 @@ class _NewExpenseSheetState extends ConsumerState<_NewExpenseSheet> {
   ExpenseCategoryOption? _category;
   final List<({String path, String name})> _receipts = [];
   bool _submitting = false;
+
+  /// Upload progress 0..1 while receipts are being sent; null when idle.
+  double? _uploadProgress;
 
   @override
   void dispose() {
@@ -208,7 +212,11 @@ class _NewExpenseSheetState extends ConsumerState<_NewExpenseSheet> {
       _toast(error);
       return;
     }
-    setState(() => _submitting = true);
+    final hasUploads = _receipts.isNotEmpty;
+    setState(() {
+      _submitting = true;
+      _uploadProgress = hasUploads ? 0 : null;
+    });
     try {
       await ref.read(expenseRepositoryProvider).createExpense(
             categoryId: _category!.id,
@@ -217,12 +225,21 @@ class _NewExpenseSheetState extends ConsumerState<_NewExpenseSheet> {
             amountAfterTax: num.parse(_after.text.trim()),
             date: widget.date,
             receiptPaths: _receipts.map((r) => r.path).toList(),
+            onSendProgress: hasUploads
+                ? (sent, total) {
+                    if (total <= 0 || !mounted) return;
+                    setState(() => _uploadProgress = sent / total);
+                  }
+                : null,
           );
       if (!mounted) return;
       Navigator.of(context).pop(true);
     } on ApiException catch (e) {
       if (!mounted) return;
-      setState(() => _submitting = false);
+      setState(() {
+        _submitting = false;
+        _uploadProgress = null;
+      });
       _toast(e.message);
     }
   }
@@ -323,11 +340,20 @@ class _NewExpenseSheetState extends ConsumerState<_NewExpenseSheet> {
                 AppSpacing.s4,
                 AppSpacing.s4 + MediaQuery.of(context).viewPadding.bottom,
               ),
-              child: AppButton(
-                label: 'Add expense',
-                height: 48,
-                loading: _submitting,
-                onPressed: _submitting ? null : _submit,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (_uploadProgress != null) ...[
+                    UploadProgress(_uploadProgress!),
+                    const SizedBox(height: AppSpacing.s3),
+                  ],
+                  AppButton(
+                    label: 'Add expense',
+                    height: 48,
+                    loading: _submitting,
+                    onPressed: _submitting ? null : _submit,
+                  ),
+                ],
               ),
             ),
           ],

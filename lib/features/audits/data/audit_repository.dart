@@ -18,7 +18,8 @@ abstract interface class AuditRepository {
   /// Create/update an observation submission — `POST
   /// /my-audits/{eventId}/observations/{auditObservationId}/submit`.
   /// [newFilePaths] are local files to upload; [deleteFileIds] are existing
-  /// file ids to remove. Returns the updated observation.
+  /// file ids to remove. [onSendProgress] reports upload bytes (sent, total)
+  /// so the UI can show a progress bar. Returns the updated observation.
   Future<AuditObservation> submitObservation({
     required int eventId,
     required int auditObservationId,
@@ -26,6 +27,7 @@ abstract interface class AuditRepository {
     String? note,
     List<String> newFilePaths,
     List<int> deleteFileIds,
+    void Function(int sent, int total)? onSendProgress,
   });
 
   /// Finalize the audit — `POST /my-audits/{eventId}/complete`. Optional
@@ -87,6 +89,7 @@ class AuditRepositoryImpl implements AuditRepository {
     String? note,
     List<String> newFilePaths = const [],
     List<int> deleteFileIds = const [],
+    void Function(int sent, int total)? onSendProgress,
   }) async {
     try {
       final form = FormData();
@@ -103,6 +106,7 @@ class AuditRepositoryImpl implements AuditRepository {
       final res = await _dio.post<Map<String, dynamic>>(
         '/my-audits/$eventId/observations/$auditObservationId/submit',
         data: form,
+        onSendProgress: onSendProgress,
       );
       return AuditObservation.fromJson(res.data!['data'] as Map<String, dynamic>);
     } on DioException catch (e) {
@@ -206,7 +210,16 @@ class MockAuditRepository implements AuditRepository {
     String? note,
     List<String> newFilePaths = const [],
     List<int> deleteFileIds = const [],
+    void Function(int sent, int total)? onSendProgress,
   }) async {
+    // Simulate an upload ramp so the progress bar is exercised in mock mode.
+    if (onSendProgress != null && newFilePaths.isNotEmpty) {
+      const total = 100;
+      for (var sent = 0; sent <= total; sent += 20) {
+        await Future<void>.delayed(const Duration(milliseconds: 120));
+        onSendProgress(sent, total);
+      }
+    }
     await _latency();
     return AuditObservation(
       auditObservationId: auditObservationId,

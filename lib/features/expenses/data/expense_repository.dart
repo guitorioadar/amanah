@@ -34,7 +34,8 @@ abstract interface class ExpenseRepository {
   Future<ExpenseDetail> detailByDate(DateTime date);
 
   /// Create an expense — `POST /expenses` (multipart). At least one receipt is
-  /// required by the backend (422 otherwise).
+  /// required by the backend (422 otherwise). [onSendProgress] reports upload
+  /// bytes (sent, total) so the UI can show a progress bar.
   Future<void> createExpense({
     required int categoryId,
     required List<int> clientIds,
@@ -43,6 +44,7 @@ abstract interface class ExpenseRepository {
     required DateTime date,
     required List<String> receiptPaths,
     String? note,
+    void Function(int sent, int total)? onSendProgress,
   });
 
   /// Active clients for the picker — `GET /clients/dropdown`.
@@ -101,6 +103,7 @@ class ExpenseRepositoryImpl implements ExpenseRepository {
     required DateTime date,
     required List<String> receiptPaths,
     String? note,
+    void Function(int sent, int total)? onSendProgress,
   }) async {
     try {
       final form = FormData();
@@ -119,7 +122,11 @@ class ExpenseRepositoryImpl implements ExpenseRepository {
           MapEntry('receipts[]', await MultipartFile.fromFile(path)),
         );
       }
-      await _dio.post<Map<String, dynamic>>('/expenses', data: form);
+      await _dio.post<Map<String, dynamic>>(
+        '/expenses',
+        data: form,
+        onSendProgress: onSendProgress,
+      );
     } on DioException catch (e) {
       throw ApiException.fromDio(e);
     }
